@@ -8,6 +8,10 @@ from rich.console import Console
 from cartoon_niche_radar.pipeline.classify import run_classify
 from cartoon_niche_radar.pipeline.collect import run_collect
 from cartoon_niche_radar.pipeline.normalize import run_normalize
+from cartoon_niche_radar.pipeline.production_candidates import (
+    ProductionCandidateGateError,
+    export_production_candidates,
+)
 from cartoon_niche_radar.pipeline.report import run_report
 from cartoon_niche_radar.pipeline.score import build_analysis_frame, run_score
 from cartoon_niche_radar.pipeline.stages import get_stage, readiness_verdict, write_stage_qa
@@ -83,6 +87,27 @@ def report_cmd() -> None:
     console.print(f"Report written. gates_passed={bundle.evidence_gates_passed}")
 
 
+@app.command("production-candidates")
+def production_candidates_cmd(
+    min_confidence: float = typer.Option(0.65, help="Minimum Radar confidence for production"),
+    top_n: int = typer.Option(20, help="Maximum production candidates to export"),
+) -> None:
+    """Export a fail-closed Radar → Factory candidate bundle."""
+    try:
+        payload = export_production_candidates(
+            min_confidence=min_confidence,
+            top_n=top_n,
+        )
+    except ProductionCandidateGateError as exc:
+        console.print(f"[red]Production export blocked: {exc}[/red]")
+        raise typer.Exit(code=2) from exc
+    paths = project_paths()
+    console.print(
+        f"Production candidates: {payload['candidate_count']} — "
+        f"{paths['reports'] / 'production_candidates.json'}"
+    )
+
+
 @app.command("run-all")
 def run_all_cmd(
     max_videos: int = typer.Option(500, help="Target videos (prefer staged protocol)"),
@@ -120,8 +145,8 @@ def run_all_cmd(
     validation = run_classifier_validation(classifications)
 
     readiness = readiness_verdict(
-        collector_ok=True,  # collector code paths exercised; no live call in sample mode
-        classifier_ok=True,  # heuristic path ready; openai requires key + gold validation for Stage C
+        collector_ok=True,
+        classifier_ok=True,
         sampling_ok=True,
         empirical_ok=False,
     )
@@ -142,6 +167,8 @@ def run_all_cmd(
     write_json(
         paths["outputs"] / "last_run.json",
         {
+            "generated_at": bundle.generated_at.isoformat(),
+            "synthetic": use_sample,
             "sample_size": bundle.sample_size,
             "gates_passed": bundle.evidence_gates_passed,
             "top20_count": len(bundle.top20),
@@ -170,6 +197,7 @@ def status_cmd() -> None:
         "scored": paths["scored"] / "niche_scores.json",
         "summary": paths["reports"] / "SUMMARY.md",
         "sample_composition": paths["reports"] / "sample_composition.json",
+        "production_candidates": paths["reports"] / "production_candidates.json",
     }
     for name, path in checks.items():
         console.print(f"{name}: {'OK' if path.exists() else 'missing'} — {path}")
