@@ -136,12 +136,25 @@ emotional_triggers:
   - unknown
 
 formats:
+  - micro_under_15
   - short_15_30
   - short_30_45
   - short_45_60
-  - micro_under_15
-  - longform_over_60
+  - short_60_90
+  - short_90_180
+  - over_180
   - unknown
+
+youtube_content_types:
+  - SHORTS_CONFIRMED
+  - SHORTS_RULE_INFERRED
+  - SHORTFORM_PROXY
+  - NON_SHORT
+  - UNKNOWN
+
+sample_roles:
+  - CORE
+  - COVERAGE
 
 channel_size_buckets:
   - id: micro

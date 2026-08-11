@@ -212,11 +212,22 @@ def sample_composition(df: pd.DataFrame) -> dict[str, Any]:
         "short_or_long",
         "views_metric_epoch",
         "made_for_kids",
+        "youtube_content_type",
+        "sample_role",
+        "duration_bin",
+        "source_seed_family",
     ]:
         if col in df.columns:
             out[col] = {str(k): int(v) for k, v in df[col].fillna("UNKNOWN").value_counts().items()}
+    if "sample_role" in df.columns:
+        core = df[df["sample_role"].fillna("CORE") == "CORE"]
+        cov = df[df["sample_role"] == "COVERAGE"]
+        out["core_vs_coverage"] = {
+            "CORE": int(len(core)),
+            "COVERAGE": int(len(cov)),
+            "note": "COVERAGE must not silently weight unweighted CORE age-demand comparisons.",
+        }
     if "publish_date" in df.columns:
-        # publication age bins
         try:
             ages = pd.to_datetime(df["publish_date"], utc=True, errors="coerce")
             days = (pd.Timestamp.utcnow() - ages).dt.total_seconds() / 86400.0

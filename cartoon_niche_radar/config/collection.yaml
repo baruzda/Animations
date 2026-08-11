@@ -4,9 +4,9 @@ target:
   min_relevant_videos: 10000
   platforms_priority: [youtube_shorts]
   lookback_days: 365
-  max_duration_seconds_shorts: 60
+  # Collect videos up to 3 minutes for Shorts-era analysis; >180 treated as NON_SHORT.
+  max_duration_seconds_collect: 180
 
-# Staged live protocol — do NOT jump straight to 10k
 stages:
   A:
     name: pipeline_data_quality
@@ -19,65 +19,102 @@ stages:
   C:
     name: main_analysis
     target_videos: 10000
-    purpose: Primary opportunity analysis on POST_2025_03_31 Shorts where possible.
+    purpose: Primary opportunity analysis on confirmed/high-confidence Shorts POST_2025_03_31.
 
 shorts_views_metric_break:
-  # FACT: YouTube changed Shorts view counting methodology on this date.
   break_date: "2025-03-31"
+  shorts_3min_expansion_date: "2024-10-15"
   primary_opportunity_epoch: POST_2025_03_31
   do_not_mix_epochs_in_opportunity: true
+  require_content_types_for_opportunity:
+    - SHORTS_CONFIRMED
+  optional_high_confidence_inferred: true
+  min_inferred_confidence: 0.7
 
 youtube:
+  # CORE discovery — NO numeric age labels in queries
   base_queries:
-    - "AI animation short"
-    - "cartoon short"
-    - "animated short funny"
+    - "AI animation"
+    - "cartoon animation"
+    - "animated story"
     - "AI cartoon"
-    - "animated story short"
-    - "cartoon shorts"
-    - "2D animation short"
-    - "3D cartoon short"
+    - "cartoon comedy"
+    - "2D animation"
+    - "3D cartoon"
+
+  core_theme_queries:
+    - animation
+    - funny_relatable
+    - school
+    - friendship
+    - family
+    - gaming
+    - animals
+    - music
+    - educational
+    - mystery
+    - fantasy
+    - superheroes
+    - absurd_surreal
+    - pov
+    - what_if
+    - memes
+
+  # COVERAGE — optional recall; must not silently weight CORE age-demand
+  coverage_queries:
+    - query: "preschool animation"
+      source_seed_family: preschool_animation
+      age_hypothesis: "2-5"
+    - query: "kids cartoon animation"
+      source_seed_family: kids_animation
+      age_hypothesis: "6-8"
+    - query: "tween animation"
+      source_seed_family: tween_animation
+      age_hypothesis: "9-12"
+    - query: "teen animation"
+      source_seed_family: teen_animation
+      age_hypothesis: "13-17"
+    - query: "adult animation"
+      source_seed_family: adult_animation
+      age_hypothesis: "18-24"
+
+  coverage_enabled: true
+  coverage_search_budget_share: 0.15  # fraction of daily SEARCH plan
 
   shorts_filters:
     prefer_vertical: true
-    max_duration_seconds: 60
+    # FACT: videoDuration=short means <4 minutes — NOT Shorts confirmation
     video_duration_api: short
 
   search:
-    # Discovery only — never use search.list to re-fetch known IDs
     order_modes: [date, relevance, viewCount]
     region_codes: [US, GB, CA, AU, IN, BR, DE, FR, JP, KR, MX, ID]
     relevance_languages: [en, es, pt, hi, id, ja, ko, de, fr, ru]
-    max_pages_per_query: 2
+    max_pages_per_query: 1
     results_per_page: 50
+    apply_published_after: true
 
   discovery:
-    # Prefer search for themes/channels; expand via uploads playlist
     prefer_channel_expansion: true
-    max_search_seeds_per_day: 80  # leave headroom under SEARCH bucket
     max_new_channels_per_day: 40
 
   channel_expansion:
     enabled: true
-    # channels.list → contentDetails.relatedPlaylists.uploads → playlistItems.list
     max_videos_per_channel: 40
-    max_share_per_channel: 0.05  # no single channel >5% of collected set
+    max_share_per_channel: 0.05
     playlist_page_size: 50
     max_playlist_pages_per_channel: 2
 
   enrichment:
-    # Prefer videos.batchGetStats for known IDs (BATCH_STATS bucket)
     prefer_batch_get_stats: true
-    # Official docs list comma-separated ids; public examples use 50.
-    # Keep configurable — do not hardcode as an undocumented absolute.
     batch_get_stats_size: 50
     batch_get_stats_size_is_safe_fallback: true
-    batch_videos_list_size: 50  # fallback / madeForKids+status parts
+    batch_videos_list_size: 50
     batch_channels: 50
     fetch_status_made_for_kids: true
-    # videos.list still needed for status.madeForKids (FACT) when batchGetStats
-    # does not return status — see pipeline notes.
     always_fetch_status_via_videos_list: true
+    optional_ytdlp: false
+    optional_local_embeddings: false
 
   channel_size_strata:
     - micro
@@ -88,19 +125,21 @@ youtube:
 stratified_discovery:
   enabled: true
   strata:
-    - target_age_hypothesis
     - theme
     - channel_size
     - publication_age
     - language
-    - short_or_long
-  # Soft caps to prevent a few popular seeds/themes/channels from dominating
+    - youtube_content_type
+    - sample_role
   max_share_per_theme: 0.12
-  max_share_per_age_hypothesis: 0.30
   max_share_per_seed: 0.08
   max_share_per_language: 0.50
+  # Age-hypothesis caps apply only to COVERAGE sample_role
+  max_share_per_age_hypothesis_coverage: 0.35
   publication_age_bins_days: [7, 30, 90, 365]
   round_robin_seeds: true
+  # Caps use persisted discovered count (IDs accepted immediately)
+  cap_denominator: persisted_discovered
 
 relevance:
   require_any_tokens:
@@ -127,3 +166,18 @@ resume:
   discovered_ids_path: data/raw/discovered_video_ids.jsonl
   enriched_ids_path: data/raw/enriched_video_ids.jsonl
   idempotent: true
+  persist_ids_before_page_progress: true
+
+classifier:
+  providers: [heuristic, openai, optional_local]
+  default_provider: heuristic
+  openai_classifier_version: openai-v1
+  heuristic_classifier_version: heuristic-v3
+  validation:
+    enabled: true
+    gold_sample_path: data/validation/gold_sample.jsonl
+    report_path: data/reports/qa/classifier_validation.json
+    min_age_accuracy: 0.65
+    min_theme_accuracy: 0.65
+    max_unknown_rate: 0.40
+    block_stage_c_on_failure: true

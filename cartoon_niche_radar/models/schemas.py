@@ -64,9 +64,16 @@ class VideoRecord(BaseModel):
 
     # FACT from YouTube status.madeForKids — never equated to a specific age band
     made_for_kids: MadeForKids = MadeForKids.UNKNOWN
-    # Shorts view-count methodology epoch
+    # Shorts view-count methodology epoch (only for confirmed/high-conf inferred Shorts)
     views_metric_epoch: str = "UNKNOWN"
     channel_size_bucket: Optional[str] = None
+    # Not the same as Shorts confirmation — see youtube_content_type
+    youtube_content_type: str = "UNKNOWN"
+    youtube_content_type_confidence: float = 0.0
+    duration_bin: Optional[str] = None
+    sample_role: str = "CORE"  # CORE | COVERAGE
+    source_seed_family: Optional[str] = None
+    tags: List[str] = Field(default_factory=list)
 
     field_evidence: Dict[str, Any] = Field(default_factory=dict)
     collected_at: Optional[datetime] = None
@@ -92,7 +99,10 @@ class NormalizedMetrics(BaseModel):
     channel_size_adjusted_performance: Optional[float] = None
     age_days: Optional[float] = None
     views_metric_epoch: str = "UNKNOWN"
+    youtube_content_type: str = "UNKNOWN"
+    sample_role: str = "CORE"
     opportunity_eligible: bool = False
+    shorts_opportunity_eligible: bool = False
 
 
 class ClassificationResult(BaseModel):

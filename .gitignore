@@ -34,6 +34,9 @@ data/reports/**
 !data/reports/.gitkeep
 !data/reports/qa/
 !data/reports/qa/.gitkeep
+data/validation/**
+!data/validation/.gitkeep
+!data/validation/gold_sample.jsonl
 *.db
 *.sqlite3
 

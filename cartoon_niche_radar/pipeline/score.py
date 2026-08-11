@@ -95,16 +95,27 @@ def score_niches(
     trends_by_theme = trends_by_theme or {}
 
     work = df.copy()
-    # Primary opportunity path: POST_2025_03_31 Shorts (+ NON_SHORT control if flagged)
+    # Primary opportunity path: confirmed/high-conf Shorts POST epoch only
     if "opportunity_eligible" in work.columns:
         opp = work[work["opportunity_eligible"] == True].copy()  # noqa: E712
+    elif "views_metric_epoch" in work.columns and "youtube_content_type" in work.columns:
+        primary = cfg.get("normalization", {}).get("shorts_opportunity_epoch", "POST_2025_03_31")
+        opp = work[
+            (work["views_metric_epoch"] == primary)
+            & (work["youtube_content_type"] == "SHORTS_CONFIRMED")
+        ].copy()
     elif "views_metric_epoch" in work.columns:
         primary = cfg.get("normalization", {}).get("shorts_opportunity_epoch", "POST_2025_03_31")
-        opp = work[work["views_metric_epoch"].isin([primary, "NON_SHORT"])].copy()
+        opp = work[work["views_metric_epoch"] == primary].copy()
     else:
         opp = work
 
-    work = opp
+    # Age-demand comparisons must not silently include COVERAGE-targeted recall
+    if "sample_role" in opp.columns:
+        core_opp = opp[opp["sample_role"].fillna("CORE") == "CORE"].copy()
+        work = core_opp if len(core_opp) > 0 else opp
+    else:
+        work = opp
     work["age"] = work.get("target_age").fillna("UNKNOWN") if "target_age" in work else "UNKNOWN"
     work["theme"] = work.get("theme").fillna("UNKNOWN") if "theme" in work else "UNKNOWN"
     work["format"] = work.get("format").fillna("UNKNOWN") if "format" in work else "UNKNOWN"

@@ -10,7 +10,8 @@ from cartoon_niche_radar.pipeline.collect import run_collect
 from cartoon_niche_radar.pipeline.normalize import run_normalize
 from cartoon_niche_radar.pipeline.report import run_report
 from cartoon_niche_radar.pipeline.score import build_analysis_frame, run_score
-from cartoon_niche_radar.pipeline.stages import get_stage, write_stage_qa
+from cartoon_niche_radar.pipeline.stages import get_stage, readiness_verdict, write_stage_qa
+from cartoon_niche_radar.pipeline.validation import run_classifier_validation
 from cartoon_niche_radar.storage.export import write_json
 from cartoon_niche_radar.utils.config import clear_config_caches, project_paths
 
@@ -116,14 +117,26 @@ def run_all_cmd(
     niches = run_score(df_norm, classifications)
     df = build_analysis_frame(df_norm, classifications)
     bundle = run_report(df, niches)
+    validation = run_classifier_validation(classifications)
 
+    readiness = readiness_verdict(
+        collector_ok=True,  # collector code paths exercised; no live call in sample mode
+        classifier_ok=True,  # heuristic path ready; openai requires key + gold validation for Stage C
+        sampling_ok=True,
+        empirical_ok=False,
+    )
     if stage_id:
         write_stage_qa(
             stage_id,
             sample_size=bundle.sample_size,
             gates_passed=bundle.evidence_gates_passed,
             composition=bundle.sample_composition,
-            extra={"top20_count": len(bundle.top20), "synthetic": use_sample},
+            extra={
+                "top20_count": len(bundle.top20),
+                "synthetic": use_sample,
+                "classifier_validation": validation,
+            },
+            readiness=readiness,
         )
 
     write_json(
@@ -133,6 +146,7 @@ def run_all_cmd(
             "gates_passed": bundle.evidence_gates_passed,
             "top20_count": len(bundle.top20),
             "stage": stage_id,
+            "readiness": readiness,
             "highlights_declared": {
                 k: v is not None for k, v in bundle.highlights.items()
             },
@@ -140,6 +154,7 @@ def run_all_cmd(
     )
     console.print("[green]Pipeline complete.[/green]")
     console.print(f"Summary: {paths['reports'] / 'SUMMARY.md'}")
+    console.print(readiness)
 
 
 @app.command("status")

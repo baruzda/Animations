@@ -10,7 +10,9 @@ from cartoon_niche_radar.utils.config import get_settings, get_taxonomy, project
 from cartoon_niche_radar.utils.time import utcnow
 
 
-CLASSIFIER_VERSION = "heuristic-v2"
+CLASSIFIER_VERSION = "heuristic-v3"
+OPENAI_CLASSIFIER_VERSION = "openai-v1"
+
 
 class HeuristicClassifier:
     """Deterministic keyword classifier with explicit confidence + UNKNOWN.
@@ -203,17 +205,18 @@ class HeuristicClassifier:
     def _match_format(self, duration: int | None) -> Evidenced[str]:
         if duration is None:
             return Evidenced.unknown("duration missing")
-        # FACT duration → INFERENCE format bucket
-        if duration < 15:
-            label = "micro_under_15"
-        elif duration <= 30:
-            label = "short_15_30"
-        elif duration <= 45:
-            label = "short_30_45"
-        elif duration <= 60:
-            label = "short_45_60"
-        else:
-            label = "longform_over_60"
+        from cartoon_niche_radar.utils.shorts import duration_bin
+
+        mapping = {
+            "under_15": "micro_under_15",
+            "15_30": "short_15_30",
+            "30_45": "short_30_45",
+            "45_60": "short_45_60",
+            "60_90": "short_60_90",
+            "90_180": "short_90_180",
+            "over_180": "over_180",
+        }
+        label = mapping.get(duration_bin(duration).value, "unknown")
         return Evidenced.inference(
             label,
             0.85,
@@ -253,26 +256,161 @@ class HeuristicClassifier:
 
 
 class OpenAIClassifier:
-    """Optional LLM classifier — requires OPENAI_API_KEY and classifier_provider=openai."""
+    """Real structured OpenAI classification. Failures report FALLBACK_HEURISTIC explicitly."""
 
-    def __init__(self) -> None:
+    def __init__(self, client: Any = None) -> None:
         settings = get_settings()
-        if not settings.openai_api_key:
+        if not settings.openai_api_key and client is None:
             raise ValueError("OPENAI_API_KEY required for openai classifier")
-        try:
-            from openai import OpenAI
-        except ImportError as exc:
-            raise RuntimeError("pip install '.[openai]'") from exc
-        self.client = OpenAI(api_key=settings.openai_api_key)
         self.model = settings.openai_model
-        self.fallback = HeuristicClassifier()
         self.min_confidence = settings.min_confidence_for_label
+        self.version = OPENAI_CLASSIFIER_VERSION
+        self.fallback = HeuristicClassifier()
+        if client is not None:
+            self.client = client
+        else:
+            try:
+                from openai import OpenAI
+            except ImportError as exc:
+                raise RuntimeError("pip install '.[openai]'") from exc
+            self.client = OpenAI(api_key=settings.openai_api_key)
 
     def classify(self, rec: VideoRecord) -> ClassificationResult:
-        # For safety/cost: fall back to heuristic until prompts are validated on a sample.
-        # INFERENCE labels from LLM must still respect UNKNOWN below threshold.
+        try:
+            payload = self._request(rec)
+            return self._parse(rec, payload)
+        except Exception as exc:  # noqa: BLE001 — explicit fallback path
+            result = self.fallback.classify(rec)
+            result.classifier = "FALLBACK_HEURISTIC"
+            result.classifier_version = f"{CLASSIFIER_VERSION}+fallback_from_openai"
+            # Preserve explicit failure signal in age evidence
+            feats = list(result.age_evidence_features or [])
+            feats.append(f"openai_error={type(exc).__name__}")
+            result.age_evidence_features = feats
+            return result
+
+    def _request(self, rec: VideoRecord) -> dict:
+        import json
+
+        system = (
+            "You classify short-form animated YouTube videos. "
+            "Return ONLY valid JSON. "
+            "Never invent concrete age from madeForKids alone. "
+            "If evidence is weak, set value null and confidence 0. "
+            "For hook and story_structure always return null unless transcript/content evidence is provided."
+        )
+        user = {
+            "title": rec.title,
+            "description": (rec.description or "")[:2000],
+            "tags": rec.tags,
+            "duration_seconds": rec.duration_seconds,
+            "made_for_kids_FACT": rec.made_for_kids.value
+            if hasattr(rec.made_for_kids, "value")
+            else rec.made_for_kids,
+            "language": rec.language,
+            "channel_subscribers": rec.channel_subscribers,
+            "youtube_content_type": rec.youtube_content_type,
+            "fields": [
+                "target_age",
+                "theme",
+                "visual_style",
+                "character_type",
+                "emotional_trigger",
+                "dialogue",
+                "music",
+                "series_potential",
+                "hook",
+                "story_structure",
+            ],
+            "age_values": ["2-5", "6-8", "9-12", "13-17", "18-24"],
+            "note": "hook/story_structure require content evidence; otherwise null",
+        }
+        resp = self.client.chat.completions.create(
+            model=self.model,
+            temperature=0,
+            response_format={"type": "json_object"},
+            messages=[
+                {"role": "system", "content": system},
+                {"role": "user", "content": json.dumps(user)},
+            ],
+        )
+        content = resp.choices[0].message.content or "{}"
+        return json.loads(content)
+
+    def _parse(self, rec: VideoRecord, payload: dict) -> ClassificationResult:
+        def field(name: str, *, allow_without_content: bool = True) -> Evidenced:
+            raw = payload.get(name)
+            if isinstance(raw, dict):
+                value = raw.get("value")
+                conf = float(raw.get("confidence") or 0)
+                feats = list(raw.get("evidence_features") or [])
+            else:
+                value, conf, feats = raw, float(payload.get(f"{name}_confidence") or 0.5), []
+            if name in {"hook", "story_structure"} and not allow_without_content:
+                return Evidenced.unknown(
+                    "no content evidence for hook/story_structure",
+                    source="openai",
+                )
+            if value is None or conf < self.min_confidence:
+                return Evidenced.unknown(
+                    f"low confidence or null for {name}",
+                    source="openai",
+                )
+            return Evidenced.inference(
+                value, conf, "openai", rationale=";".join(feats) if feats else None
+            )
+
+        # hook/story always UNKNOWN unless payload includes content_evidence=true
+        content_ok = bool(payload.get("content_evidence"))
+        age = field("target_age")
+        fmt = self.fallback._match_format(rec.duration_seconds)
+        mfk = (
+            rec.made_for_kids.value
+            if hasattr(rec.made_for_kids, "value")
+            else str(getattr(rec, "made_for_kids", "unknown"))
+        )
+        return ClassificationResult(
+            video_id=rec.video_id,
+            target_age=age,
+            theme=field("theme"),
+            story_structure=field("story_structure", allow_without_content=content_ok),
+            hook=field("hook", allow_without_content=content_ok),
+            visual_style=field("visual_style"),
+            character_type=field("character_type"),
+            emotional_trigger=field("emotional_trigger"),
+            format=fmt,
+            series_potential=field("series_potential"),
+            dialogue=field("dialogue"),
+            music=field("music"),
+            recurring_character=Evidenced.unknown("not requested in openai schema"),
+            age_confidence=float(age.confidence or 0),
+            classifier_version=self.version,
+            age_evidence_features=["provider=openai"],
+            made_for_kids_fact=mfk,
+            classifier="openai",
+            classified_at=utcnow(),
+        )
+
+
+class OptionalLocalClassifier:
+    """Optional local embeddings path — INFERENCE only, never FACT."""
+
+    def __init__(self) -> None:
+        self.fallback = HeuristicClassifier()
+        self.version = "optional_local-v0"
+
+    def classify(self, rec: VideoRecord) -> ClassificationResult:
+        # Scaffold only — requires optional deps; otherwise explicit fallback.
+        try:
+            import sentence_transformers  # noqa: F401
+        except ImportError:
+            result = self.fallback.classify(rec)
+            result.classifier = "FALLBACK_HEURISTIC"
+            result.classifier_version = f"{CLASSIFIER_VERSION}+local_unavailable"
+            return result
         result = self.fallback.classify(rec)
-        result.classifier = f"openai_pending_validation:{self.model}"
+        result.classifier = "optional_local_pending"
+        result.classifier_version = self.version
         return result
 
 
@@ -280,6 +418,8 @@ def get_classifier():
     provider = get_settings().classifier_provider.lower()
     if provider == "openai":
         return OpenAIClassifier()
+    if provider in {"optional_local", "local"}:
+        return OptionalLocalClassifier()
     return HeuristicClassifier()
 
 
@@ -298,9 +438,7 @@ def run_classify(records: list[VideoRecord] | None = None) -> list[dict[str, Any
     out: list[dict[str, Any]] = []
     for rec in records:
         result = clf.classify(rec)
-        # Force low-confidence fields to UNKNOWN already handled in classifier
-        payload = result.model_dump(mode="json")
-        out.append(payload)
+        out.append(result.model_dump(mode="json"))
 
     write_jsonl(paths["classified"] / "classifications.jsonl", out)
     return out

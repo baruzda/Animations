@@ -17,7 +17,7 @@ class CollectionState:
         self.path = path or (project_paths()["root"] / rel)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self.data: Dict[str, Any] = {
-            "version": 1,
+            "version": 2,
             "updated_at": None,
             "completed_queries": [],
             "completed_seeds": [],
@@ -26,6 +26,7 @@ class CollectionState:
             "query_page_tokens": {},
             "discovered_video_ids": [],
             "enriched_video_ids": [],
+            "video_meta": {},  # video_id -> {sample_role, theme, seed_id, ...}
             "quota_usage": {},
             "quota_pt_date": None,
             "collection_dates": [],
@@ -36,13 +37,13 @@ class CollectionState:
 
     def load(self) -> None:
         if self.path.exists():
-            self.data.update(json.loads(self.path.read_text(encoding="utf-8")))
+            loaded = json.loads(self.path.read_text(encoding="utf-8"))
+            self.data.update(loaded)
 
     def save(self) -> None:
         self.data["updated_at"] = utcnow().isoformat()
         self.path.write_text(json.dumps(self.data, indent=2, ensure_ascii=False), encoding="utf-8")
 
-    # --- query / seed / channel completion ---
     def is_query_done(self, query_key: str) -> bool:
         return query_key in set(self.data.get("completed_queries") or [])
 
@@ -78,12 +79,15 @@ class CollectionState:
             tokens.pop(query_key, None)
         self.data["query_page_tokens"] = tokens
 
-    # --- video IDs ---
     def discovered(self) -> Set[str]:
         return set(self.data.get("discovered_video_ids") or [])
 
     def enriched(self) -> Set[str]:
         return set(self.data.get("enriched_video_ids") or [])
+
+    def effective_discovered_count(self) -> int:
+        """Denominator for strata/channel caps = persisted discovered count."""
+        return len(self.discovered())
 
     def add_discovered(self, video_ids: Iterable[str]) -> int:
         current = self.discovered()
@@ -91,6 +95,53 @@ class CollectionState:
         current.update(video_ids)
         self.data["discovered_video_ids"] = sorted(current)
         return len(current) - before
+
+    def accept_discovered(
+        self,
+        video_id: str,
+        *,
+        channel_id: Optional[str] = None,
+        theme: Optional[str] = None,
+        age_hypothesis: Optional[str] = None,
+        seed_id: Optional[str] = None,
+        sample_role: str = "CORE",
+        source_seed_family: Optional[str] = None,
+        persist: bool = True,
+    ) -> bool:
+        """Persist a newly accepted ID immediately (crash-safe) and bump strata.
+
+        Returns False if already discovered.
+        """
+        if video_id in self.discovered():
+            return False
+        ids = self.discovered()
+        ids.add(video_id)
+        self.data["discovered_video_ids"] = sorted(ids)
+
+        meta = dict(self.data.get("video_meta") or {})
+        meta[video_id] = {
+            "channel_id": channel_id,
+            "theme": theme,
+            "age_hypothesis": age_hypothesis,
+            "seed_id": seed_id,
+            "sample_role": sample_role,
+            "source_seed_family": source_seed_family or seed_id,
+            "accepted_at": utcnow().isoformat(),
+        }
+        self.data["video_meta"] = meta
+
+        if channel_id:
+            self.bump_channel_count(channel_id, 1)
+        if theme:
+            self.bump_stratum(f"theme:{theme}")
+        if age_hypothesis:
+            self.bump_stratum(f"age:{age_hypothesis}")
+        if seed_id:
+            self.bump_stratum(f"seed:{seed_id}")
+        self.bump_stratum(f"sample_role:{sample_role}")
+        if persist:
+            self.save()
+        return True
 
     def add_enriched(self, video_ids: Iterable[str]) -> int:
         current = self.enriched()
@@ -109,9 +160,14 @@ class CollectionState:
         return counts[channel_id]
 
     def channel_share(self, channel_id: str, total: Optional[int] = None) -> float:
-        total = total if total is not None else max(1, len(self.discovered()))
+        total = total if total is not None else max(1, self.effective_discovered_count())
         counts = self.data.get("channel_video_counts") or {}
         return float(counts.get(channel_id, 0)) / float(total)
+
+    def stratum_share(self, key: str, total: Optional[int] = None) -> float:
+        total = total if total is not None else max(1, self.effective_discovered_count())
+        counts = self.data.get("strata_counts") or {}
+        return float(counts.get(key, 0)) / float(total)
 
     def note_collection_date(self) -> None:
         dates = list(self.data.get("collection_dates") or [])

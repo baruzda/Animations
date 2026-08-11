@@ -1,5 +1,6 @@
 from cartoon_niche_radar.collectors.instagram import InstagramCollector
 from cartoon_niche_radar.collectors.quota import QuotaExceededError, QuotaManager
+from cartoon_niche_radar.collectors.query_scheduler import QueryScheduler
 from cartoon_niche_radar.collectors.resume_state import CollectionState
 from cartoon_niche_radar.collectors.tiktok import TikTokCollector
 from cartoon_niche_radar.collectors.trends import GoogleTrendsSignal
@@ -10,6 +11,7 @@ __all__ = [
     "InstagramCollector",
     "QuotaExceededError",
     "QuotaManager",
+    "QueryScheduler",
     "CollectionState",
     "TikTokCollector",
     "GoogleTrendsSignal",

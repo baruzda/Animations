@@ -14,6 +14,7 @@ from cartoon_niche_radar.models.schemas import MadeForKids, Platform, ShortOrLon
 from cartoon_niche_radar.storage.export import write_jsonl
 from cartoon_niche_radar.utils.config import get_taxonomy, project_paths
 from cartoon_niche_radar.utils.epochs import classify_views_metric_epoch
+from cartoon_niche_radar.utils.shorts import classify_youtube_content_type, duration_bin
 from cartoon_niche_radar.utils.time import age_days, channel_size_bucket, safe_div, utcnow
 
 
@@ -27,27 +28,28 @@ def generate_sample(n: int = 500, seed: int = 42) -> list[VideoRecord]:
     records: list[VideoRecord] = []
     now = utcnow()
     break_dt = datetime(2025, 3, 31, tzinfo=timezone.utc)
+    expand_dt = datetime(2024, 10, 15, tzinfo=timezone.utc)
     for i in range(n):
         age = rng.choice(ages)
         theme = rng.choice(themes)
         style = rng.choice(styles)
-        duration = rng.choice([12, 18, 25, 35, 45, 58, 90])
-        # ~80% POST-break Shorts era, ~20% PRE — to exercise epoch separation
-        if rng.random() < 0.2:
-            publish = break_dt - timedelta(days=rng.randint(1, 200))
+        duration = rng.choice([12, 18, 25, 35, 45, 58, 75, 100, 150, 200])
+        roll = rng.random()
+        if roll < 0.15:
+            publish = expand_dt - timedelta(days=rng.randint(1, 100))  # pre 3min expansion
+        elif roll < 0.35:
+            publish = break_dt - timedelta(days=rng.randint(1, 100))  # pre views break, post expansion
         else:
             publish = break_dt + timedelta(days=rng.randint(1, 400))
             if publish > now:
                 publish = now - timedelta(days=rng.randint(1, 60))
+
         subs = rng.choice([500, 5_000, 25_000, 250_000, 2_000_000])
         base = rng.lognormvariate(8, 1.2)
         views = int(base * (1 + subs / 1_000_000))
         likes = int(views * rng.uniform(0.02, 0.08))
         comments = int(views * rng.uniform(0.001, 0.01))
-        title = (
-            f"{theme.replace('_', ' ')} cartoon short for age {age} "
-            f"{style.replace('_', ' ')} #{i}"
-        )
+        title = f"{theme.replace('_', ' ')} cartoon animation {style.replace('_', ' ')} #{i}"
         age_kw = {
             "2-5": "preschool toddler kids cartoon",
             "6-8": "children elementary kids animation",
@@ -55,16 +57,37 @@ def generate_sample(n: int = 500, seed: int = 42) -> list[VideoRecord]:
             "13-17": "teenager high school teen cartoon",
             "18-24": "adult animation workplace general audience",
         }[age]
-        desc = (
-            f"Animated story about {theme}. {age_kw}. "
-            f"{'episode series' if rng.random() < 0.3 else 'one shot'}"
-        )
+        desc = f"Animated story about {theme}. {age_kw}."
         days = age_days(publish, now)
-        short_or_long = ShortOrLong.SHORT if duration <= 60 else ShortOrLong.LONG
-        epoch = classify_views_metric_epoch(
-            publish_date=publish, short_or_long=short_or_long.value
+        sample_role = "COVERAGE" if rng.random() < 0.15 else "CORE"
+
+        # Simulate aspect for some rows (vertical) to allow SHORTS_RULE_INFERRED
+        width, height = (None, None)
+        is_member = None
+        if duration <= 180 and rng.random() < 0.35:
+            width, height = 1080, 1920
+        if duration <= 180 and rng.random() < 0.15:
+            is_member = True
+
+        ctype, ctype_conf, _, _ = classify_youtube_content_type(
+            duration_seconds=duration if duration <= 180 else duration,
+            publish_date=publish,
+            width=width,
+            height=height,
+            is_shorts_tab_member=is_member,
+            search_video_duration_filter="short" if duration <= 240 else None,
         )
-        # FACT field — independent of estimated age inference
+        if duration > 180:
+            from cartoon_niche_radar.utils.shorts import YouTubeContentType
+
+            ctype = YouTubeContentType.NON_SHORT
+            ctype_conf = 0.9
+
+        epoch = classify_views_metric_epoch(
+            publish_date=publish,
+            youtube_content_type=ctype.value,
+            content_type_confidence=ctype_conf,
+        )
         if age in {"2-5", "6-8"} and rng.random() < 0.7:
             mfk = MadeForKids.TRUE
         elif age in {"18-24"} and rng.random() < 0.7:
@@ -80,7 +103,8 @@ def generate_sample(n: int = 500, seed: int = 42) -> list[VideoRecord]:
                 title=title,
                 description=desc,
                 publish_date=publish,
-                duration_seconds=duration,
+                duration_seconds=duration if duration <= 180 else duration,
+                duration_bin=duration_bin(duration).value,
                 views=views,
                 likes=likes,
                 comments=comments,
@@ -89,20 +113,21 @@ def generate_sample(n: int = 500, seed: int = 42) -> list[VideoRecord]:
                 video_count=rng.randint(10, 500),
                 language=rng.choice(["en", "en", "en", "es", "pt", "hi"]),
                 country=rng.choice(["US", "GB", "IN", "BR", None]),
-                short_or_long=short_or_long,
+                short_or_long=ShortOrLong.SHORT if duration <= 180 else ShortOrLong.LONG,
+                youtube_content_type=ctype.value,
+                youtube_content_type_confidence=ctype_conf,
                 made_for_kids=mfk,
                 views_metric_epoch=epoch.value,
                 channel_size_bucket=channel_size_bucket(subs),
+                sample_role=sample_role,
+                source_seed_family=("coverage:" + age) if sample_role == "COVERAGE" else f"core:{theme}",
                 collected_at=now,
                 source="synthetic_sample",
             )
         )
 
     paths = project_paths()
-    write_jsonl(
-        paths["raw"] / "youtube_videos.jsonl",
-        [r.model_dump(mode="json") for r in records],
-    )
+    write_jsonl(paths["raw"] / "youtube_videos.jsonl", [r.model_dump(mode="json") for r in records])
     meta = {
         "status": "synthetic",
         "n": n,

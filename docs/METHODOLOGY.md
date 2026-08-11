@@ -67,20 +67,29 @@ The project must not “aim” at teen niches. Age 13–17 is listed as a **watc
 - Unofficial public scrapers: optional, default off, require explicit enable + legal review.
 - Absence of TikTok/IG rows is recorded as UNKNOWN coverage, not as “TikTok has no opportunity”.
 
-## Shorts view-count structural break (FACT)
+## Shorts identification (FACT constraints)
 
-On **2025-03-31** YouTube changed Shorts view counting.
+- `search.list` `videoDuration=short` means duration **&lt; 4 minutes**. It is **not** Shorts confirmation.
+- Field `youtube_content_type`:
+  - `SHORTS_CONFIRMED`
+  - `SHORTS_RULE_INFERRED`
+  - `SHORTFORM_PROXY`
+  - `NON_SHORT`
+  - `UNKNOWN`
+- Opportunity Shorts analysis uses `SHORTS_CONFIRMED` (+ optional high-confidence `SHORTS_RULE_INFERRED`).
+- `SHORTFORM_PROXY` is reported separately and does **not** receive POST_2025_03_31 Shorts view semantics.
 
-Each video stores `views_metric_epoch`:
+Duration bins: under 15 / 15–30 / 30–45 / 45–60 / 60–90 / 90–180 / over 180.  
+`>60` is **not** automatically longform.
 
-- `PRE_2025_03_31`
-- `POST_2025_03_31`
-- `NON_SHORT`
-- `UNKNOWN`
+## CORE vs COVERAGE sampling
 
-Primary Opportunity analysis for Shorts uses **POST_2025_03_31 only**.
-PRE-epoch metrics are exported separately and must not be mixed into median views/day
-or viral scores for opportunity ranking.
+- **CORE** discovery queries contain no numeric age labels (2–5 … 18–24).
+- **COVERAGE** optional recall queries are tagged `sample_role=COVERAGE` and must not silently weight CORE age-demand comparisons.
+
+## Query scheduler
+
+Daily SEARCH plan is built before API calls, budget-capped, round-robin across theme/order/region/language, with `publishedAfter` from `lookback_days`.
 
 ## madeForKids vs estimated age
 
