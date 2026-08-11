@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import hashlib
+import json
 from typing import Dict, List, Optional
 
 from cartoon_factory.budget import BudgetGuard
-from cartoon_factory.domain.models import Asset, CostEvent, Episode
+from cartoon_factory.domain.models import Asset, CostEvent, Episode, QCResult
 from cartoon_factory.domain.states import EpisodeState
 from cartoon_factory.providers.base import (
     ImageProvider,
@@ -41,6 +42,7 @@ class FactoryPipeline:
         self.budget = budget or BudgetGuard()
         self.assets: List[Asset] = []
         self.cost_events: List[CostEvent] = []
+        self.qc_results: List[QCResult] = []
         self.keyframes: Dict[str, ProviderOutput] = {}
 
     def _paid_call(
@@ -183,6 +185,79 @@ class FactoryPipeline:
                 )
 
         episode.transition(EpisodeState.ASSEMBLING)
+        return episode
+
+    def assemble_manifest(self, episode: Episode) -> Episode:
+        """Fake-safe assembly boundary.
+
+        Real FFmpeg assembly consumes the same manifest; fake CI never pretends
+        its provider bytes are valid media.
+        """
+        if episode.script is None:
+            raise ValueError("episode has no script")
+        video_assets = sorted(
+            [a for a in self.assets if a.episode_id == episode.id and a.kind == "video"],
+            key=lambda a: a.scene_index or 0,
+        )
+        manifest = {
+            "episode_id": episode.id,
+            "scene_count": len(episode.script.scenes),
+            "videos": [a.model_dump(mode="json") for a in video_assets],
+        }
+        payload = json.dumps(manifest, sort_keys=True).encode()
+        output = ProviderOutput(
+            provider="factory",
+            model="assembly-manifest-v1",
+            payload=payload,
+            media_type="application/json",
+        )
+        self._persist_output(
+            episode,
+            output,
+            kind="manifest",
+            scene_index=None,
+            extension="json",
+        )
+        episode.transition(EpisodeState.QC)
+        return episode
+
+    def run_qc(self, episode: Episode) -> Episode:
+        if episode.script is None:
+            raise ValueError("episode has no script")
+        expected = {scene.index for scene in episode.script.scenes}
+        actual = {
+            asset.scene_index
+            for asset in self.assets
+            if asset.episode_id == episode.id and asset.kind == "video" and asset.scene_index is not None
+        }
+        missing = sorted(expected - actual)
+        if missing:
+            for scene_index in missing:
+                self.qc_results.append(
+                    QCResult(
+                        episode_id=episode.id,
+                        passed=False,
+                        code="MISSING_SCENE_VIDEO",
+                        message=f"missing video asset for scene {scene_index}",
+                        scene_index=scene_index,
+                    )
+                )
+            episode.transition(EpisodeState.FAILED)
+            return episode
+
+        self.qc_results.append(
+            QCResult(
+                episode_id=episode.id,
+                passed=True,
+                code="V1_ASSET_COMPLETENESS",
+                message="all expected scene video assets exist",
+            )
+        )
+        episode.transition(EpisodeState.AWAITING_FINAL_APPROVAL)
+        return episode
+
+    def approve_final(self, episode: Episode) -> Episode:
+        episode.transition(EpisodeState.READY)
         return episode
 
 
