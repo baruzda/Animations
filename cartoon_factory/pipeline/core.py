@@ -3,10 +3,11 @@ from __future__ import annotations
 import hashlib
 import json
 from collections.abc import Callable
-from typing import Any
+from functools import partial
+from typing import TypeVar
 
 from cartoon_factory.budget import BudgetGuard
-from cartoon_factory.domain.models import Asset, CostEvent, Episode, QCResult
+from cartoon_factory.domain.models import Asset, CostEvent, Episode, EpisodeScript, QCResult
 from cartoon_factory.domain.states import EpisodeState
 from cartoon_factory.providers.base import (
     ImageProvider,
@@ -16,6 +17,8 @@ from cartoon_factory.providers.base import (
     VideoProvider,
     VoiceProvider,
 )
+
+T = TypeVar("T")
 
 
 class FactoryPipeline:
@@ -54,8 +57,8 @@ class FactoryPipeline:
         operation: str,
         estimate: float,
         scene_index: int | None,
-        call: Callable[[], Any],
-    ) -> Any:
+        call: Callable[[], T],
+    ) -> T:
         event = self.budget.reserve(
             episode,
             provider=provider,
@@ -118,7 +121,7 @@ class FactoryPipeline:
                 operation="keyframe",
                 estimate=estimate,
                 scene_index=scene.index,
-                call=lambda scene=scene: self.image.create_keyframe(scene),
+                call=partial(self.image.create_keyframe, scene),
             )
             self.keyframes[f"{episode.id}:{scene.index}"] = output
             self._persist_output(
@@ -157,7 +160,7 @@ class FactoryPipeline:
                 operation="video",
                 estimate=video_estimate,
                 scene_index=scene.index,
-                call=lambda scene=scene, keyframe=keyframe: self.video.create_video(scene, keyframe),
+                call=partial(self.video.create_video, scene, keyframe),
             )
             self._persist_output(
                 episode,
@@ -167,15 +170,16 @@ class FactoryPipeline:
                 extension="mp4",
             )
 
-            if scene.dialogue:
-                voice_estimate = self.voice.estimate_voice(scene.dialogue, "default")
+            dialogue = scene.dialogue
+            if dialogue:
+                voice_estimate = self.voice.estimate_voice(dialogue, "default")
                 voice = self._paid_call(
                     episode,
                     provider=self.voice.name,
                     operation="voice",
                     estimate=voice_estimate,
                     scene_index=scene.index,
-                    call=lambda text=scene.dialogue: self.voice.create_voice(text or "", "default"),
+                    call=partial(self.voice.create_voice, dialogue, "default"),
                 )
                 self._persist_output(
                     episode,
@@ -265,6 +269,6 @@ class FactoryPipeline:
 class _ScriptOutput:
     """Adapter so script generation follows the same budget reconciliation path."""
 
-    def __init__(self, script: Any, cost: float) -> None:
+    def __init__(self, script: EpisodeScript, cost: float) -> None:
         self.script = script
         self.actual_cost_usd = cost
