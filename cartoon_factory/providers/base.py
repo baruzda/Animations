@@ -20,12 +20,18 @@ class ProviderOutput:
 class TextProvider(Protocol):
     name: str
 
+    def estimate_script(self, prompt: str) -> float:
+        ...
+
     def create_script(self, prompt: str) -> EpisodeScript:
         ...
 
 
 class ImageProvider(Protocol):
     name: str
+
+    def estimate_keyframe(self, scene: SceneScript) -> float:
+        ...
 
     def create_keyframe(self, scene: SceneScript) -> ProviderOutput:
         ...
@@ -34,6 +40,9 @@ class ImageProvider(Protocol):
 class VideoProvider(Protocol):
     name: str
 
+    def estimate_video(self, scene: SceneScript) -> float:
+        ...
+
     def create_video(self, scene: SceneScript, keyframe: ProviderOutput) -> ProviderOutput:
         ...
 
@@ -41,12 +50,18 @@ class VideoProvider(Protocol):
 class VoiceProvider(Protocol):
     name: str
 
+    def estimate_voice(self, text: str, voice_id: str) -> float:
+        ...
+
     def create_voice(self, text: str, voice_id: str) -> ProviderOutput:
         ...
 
 
 class SoundProvider(Protocol):
     name: str
+
+    def estimate_sound(self, prompt: str, duration_seconds: float) -> float:
+        ...
 
     def create_sound(self, prompt: str, duration_seconds: float) -> ProviderOutput:
         ...
