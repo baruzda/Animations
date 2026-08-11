@@ -4,6 +4,7 @@ import json
 import os
 import shutil
 from pathlib import Path
+from typing import Annotated
 
 import typer
 from rich.console import Console
@@ -71,18 +72,23 @@ def smoke_fake() -> None:
 
 @app.command("smoke-runway")
 def smoke_runway(
-    image: Path = typer.Option(..., exists=True, file_okay=True, dir_okay=False),
-    prompt: str = typer.Option(
-        "Clean limited animation, subtle readable movement, stable character design",
-        help="Motion prompt for the one-scene smoke test",
-    ),
-    seconds: float = typer.Option(5.0, min=2.0, max=10.0),
-    max_usd: float = typer.Option(0.50, min=0.01, max=1.00),
-    confirm_paid: bool = typer.Option(
-        False,
-        "--confirm-paid",
-        help="Required explicit acknowledgement that this command makes a paid API call",
-    ),
+    image: Annotated[
+        Path,
+        typer.Option(exists=True, file_okay=True, dir_okay=False),
+    ],
+    prompt: Annotated[
+        str,
+        typer.Option(help="Motion prompt for the one-scene smoke test"),
+    ] = "Clean limited animation, subtle readable movement, stable character design",
+    seconds: Annotated[float, typer.Option(min=2.0, max=10.0)] = 5.0,
+    max_usd: Annotated[float, typer.Option(min=0.01, max=1.00)] = 0.50,
+    confirm_paid: Annotated[
+        bool,
+        typer.Option(
+            "--confirm-paid",
+            help="Required explicit acknowledgement that this command makes a paid API call",
+        ),
+    ] = False,
 ) -> None:
     """Generate exactly one paid portrait Runway scene with a strict local hard cap."""
     media_types = {
