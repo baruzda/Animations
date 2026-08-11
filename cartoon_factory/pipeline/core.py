@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import hashlib
 import json
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from cartoon_factory.budget import BudgetGuard
 from cartoon_factory.domain.models import Asset, CostEvent, Episode, QCResult
