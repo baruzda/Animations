@@ -1,0 +1,52 @@
+# YouTube Data API granular quota model (August 2026)
+# FACT (Google revision history June 2026):
+# - search.list has its own daily call bucket
+# - videos.batchGetStats has its own daily unit bucket
+# - remaining methods share the GENERAL unit pool
+# Quota resets at midnight Pacific Time (America/Los_Angeles).
+
+version: 1
+timezone: America/Los_Angeles
+
+buckets:
+  SEARCH:
+    endpoints:
+      search.list: { cost: 1, unit: call }
+    daily_limit: 100
+    notes: "Dedicated search.list bucket (~100 calls/day default)."
+
+  BATCH_STATS:
+    endpoints:
+      videos.batchGetStats: { cost: 1, unit: call }
+    daily_limit: 10000
+    notes: "Dedicated videos.batchGetStats bucket (default 10_000 units/day)."
+
+  GENERAL:
+    endpoints:
+      videos.list: { cost: 1, unit: unit }
+      channels.list: { cost: 1, unit: unit }
+      playlistItems.list: { cost: 1, unit: unit }
+      playlists.list: { cost: 1, unit: unit }
+      # Default for unknown endpoints charged to GENERAL
+    daily_limit: 10000
+    default_endpoint_cost: 1
+    notes: "Shared pool for non-search / non-batchGetStats methods."
+
+# Stop BEFORE exceeding any bucket (never spend the last call that would overflow).
+stop_before_exceed: true
+reserve_calls:
+  SEARCH: 0
+  BATCH_STATS: 0
+  GENERAL: 0
+
+logging:
+  enabled: true
+  path: data/raw/quota_calls.jsonl
+  fields:
+    - endpoint
+    - quota_bucket
+    - estimated_cost
+    - timestamp
+    - pt_quota_date
+    - request_parameters_hash
+    - success

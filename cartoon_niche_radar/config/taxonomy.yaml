@@ -1,0 +1,156 @@
+# Taxonomy — age clusters, themes, styles, formats
+# Labels below are controlled vocabularies used by collectors + classifiers.
+
+age_clusters:
+  - id: "2-5"
+    label: "2–5"
+    keywords:
+      - toddler
+      - preschool
+      - "for kids"
+      - nursery
+      - "baby songs"
+      - "kids cartoon"
+  - id: "6-8"
+    label: "6–8"
+    keywords:
+      - "kids animation"
+      - "children cartoon"
+      - "elementary"
+      - "for children"
+  - id: "9-12"
+    label: "9–12"
+    keywords:
+      - "tween"
+      - "middle school"
+      - "kids adventure"
+      - "cartoon comedy"
+  - id: "13-17"
+    label: "13–17"
+    keywords:
+      - teenager
+      - "high school"
+      - "for teens"
+      - "teen cartoon"
+      - "teen animation"
+  - id: "18-24"
+    label: "18–24 / general"
+    keywords:
+      - "for adults"
+      - "adult animation"
+      - workplace
+      - "general audience"
+      - "college life"
+
+# Control group note: 18-24 is explicitly a control, not a preferred hypothesis.
+
+themes:
+  - animation
+  - funny_relatable
+  - school
+  - friendship
+  - family
+  - gaming
+  - animals
+  - music
+  - educational
+  - mystery
+  - fantasy
+  - superheroes
+  - romance_crush
+  - ai_technology
+  - absurd_surreal
+  - pov
+  - what_if
+  - memes
+  - other
+
+theme_aliases:
+  funny: funny_relatable
+  relatable: funny_relatable
+  comedy: funny_relatable
+  romance: romance_crush
+  crush: romance_crush
+  ai: ai_technology
+  technology: ai_technology
+  absurd: absurd_surreal
+  surreal: absurd_surreal
+  what if: what_if
+  whatif: what_if
+
+visual_styles:
+  - 2d_flat
+  - 2d_detailed
+  - 3d_cgi
+  - claymation_stopmotion
+  - anime_influenced
+  - chibi_cute
+  - stick_figure_minimal
+  - collage_mixed_media
+  - realistic_ai
+  - surreal_abstract
+  - unknown
+
+story_structures:
+  - setup_punchline
+  - escalation
+  - twist_ending
+  - loop
+  - tutorial_explain
+  - montage
+  - dialogue_skit
+  - silent_visual_gag
+  - cliffhanger_series
+  - unknown
+
+hooks:
+  - cold_open_conflict
+  - question_hook
+  - visual_shock
+  - text_on_screen_promise
+  - character_entrance
+  - relatable_situation
+  - cliffhanger
+  - unknown
+
+character_types:
+  - recurring_protagonist
+  - duo
+  - ensemble
+  - animal_mascot
+  - object_personification
+  - faceless_pov
+  - one_off
+  - unknown
+
+emotional_triggers:
+  - humor
+  - cuteness
+  - surprise
+  - nostalgia
+  - fear_tension
+  - aspiration
+  - empathy
+  - schadenfreude
+  - curiosity
+  - unknown
+
+formats:
+  - short_15_30
+  - short_30_45
+  - short_45_60
+  - micro_under_15
+  - longform_over_60
+  - unknown
+
+channel_size_buckets:
+  - id: micro
+    max_subs: 10000
+  - id: small
+    min_subs: 10000
+    max_subs: 100000
+  - id: mid
+    min_subs: 100000
+    max_subs: 1000000
+  - id: mega
+    min_subs: 1000000

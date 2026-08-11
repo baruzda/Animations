@@ -1,0 +1,6 @@
+data/raw/.gitkeep
+data/normalized/.gitkeep
+data/classified/.gitkeep
+data/scored/.gitkeep
+data/reports/.gitkeep
+outputs/.gitkeep

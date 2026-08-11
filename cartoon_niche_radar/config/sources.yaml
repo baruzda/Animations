@@ -1,0 +1,52 @@
+# Source policy for CARTOON NICHE RADAR
+# FACT / INFERENCE / UNKNOWN must stay explicit in pipeline outputs.
+
+primary:
+  youtube_data_api_v3:
+    enabled: true
+    role: primary
+    notes: >
+      Primary empirical source. Uses search.list + videos.list + channels.list.
+      Quota-aware batching required.
+
+secondary:
+  yt_dlp:
+    enabled: true
+    role: enrichment
+    notes: >
+      Optional metadata enrichment (duration precision, formats) for already-known
+      public video IDs. Do not use as sole discovery engine for the first 10k target.
+
+  google_trends:
+    enabled: true
+    role: secondary_signal
+    weight_in_demand_score: 0.15
+    notes: >
+      Secondary demand signal only. Never treat Trends rank as proof of monetization
+      or Shorts performance.
+
+experimental:
+  tiktok_api_public:
+    enabled: false
+    role: experimental
+    research_api_allowed: false
+    notes: >
+      FACT: TikTok Research API terms prohibit commercial use; commercial users /
+      creators / advertisers are ineligible. This project MUST NOT use Research API
+      credentials for commercial niche research.
+      Optional TikTok-Api (unofficial) may be enabled only for publicly available
+      data and only if current platform ToS/rate limits allow the intended use.
+      Default: disabled.
+
+  instaloader:
+    enabled: false
+    role: experimental
+    notes: >
+      Experimental Instagram Reels metadata via Instaloader for public profiles/hashtags.
+      Rate-limit carefully; do not store personal commenter PII.
+
+privacy:
+  store_comment_text: false
+  store_commenter_ids: false
+  store_user_personal_data: false
+  aggregate_comments_only: true

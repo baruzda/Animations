@@ -1,0 +1,129 @@
+# Collection strategy — multi-day, stratified, resume-safe
+
+target:
+  min_relevant_videos: 10000
+  platforms_priority: [youtube_shorts]
+  lookback_days: 365
+  max_duration_seconds_shorts: 60
+
+# Staged live protocol — do NOT jump straight to 10k
+stages:
+  A:
+    name: pipeline_data_quality
+    target_videos: 500
+    purpose: Validate collector/normalize/classify/score plumbing and schema quality.
+  B:
+    name: sampling_bias_validation
+    target_videos: 2000
+    purpose: Validate stratified sampling, channel caps, and composition balance.
+  C:
+    name: main_analysis
+    target_videos: 10000
+    purpose: Primary opportunity analysis on POST_2025_03_31 Shorts where possible.
+
+shorts_views_metric_break:
+  # FACT: YouTube changed Shorts view counting methodology on this date.
+  break_date: "2025-03-31"
+  primary_opportunity_epoch: POST_2025_03_31
+  do_not_mix_epochs_in_opportunity: true
+
+youtube:
+  base_queries:
+    - "AI animation short"
+    - "cartoon short"
+    - "animated short funny"
+    - "AI cartoon"
+    - "animated story short"
+    - "cartoon shorts"
+    - "2D animation short"
+    - "3D cartoon short"
+
+  shorts_filters:
+    prefer_vertical: true
+    max_duration_seconds: 60
+    video_duration_api: short
+
+  search:
+    # Discovery only — never use search.list to re-fetch known IDs
+    order_modes: [date, relevance, viewCount]
+    region_codes: [US, GB, CA, AU, IN, BR, DE, FR, JP, KR, MX, ID]
+    relevance_languages: [en, es, pt, hi, id, ja, ko, de, fr, ru]
+    max_pages_per_query: 2
+    results_per_page: 50
+
+  discovery:
+    # Prefer search for themes/channels; expand via uploads playlist
+    prefer_channel_expansion: true
+    max_search_seeds_per_day: 80  # leave headroom under SEARCH bucket
+    max_new_channels_per_day: 40
+
+  channel_expansion:
+    enabled: true
+    # channels.list → contentDetails.relatedPlaylists.uploads → playlistItems.list
+    max_videos_per_channel: 40
+    max_share_per_channel: 0.05  # no single channel >5% of collected set
+    playlist_page_size: 50
+    max_playlist_pages_per_channel: 2
+
+  enrichment:
+    # Prefer videos.batchGetStats for known IDs (BATCH_STATS bucket)
+    prefer_batch_get_stats: true
+    # Official docs list comma-separated ids; public examples use 50.
+    # Keep configurable — do not hardcode as an undocumented absolute.
+    batch_get_stats_size: 50
+    batch_get_stats_size_is_safe_fallback: true
+    batch_videos_list_size: 50  # fallback / madeForKids+status parts
+    batch_channels: 50
+    fetch_status_made_for_kids: true
+    # videos.list still needed for status.madeForKids (FACT) when batchGetStats
+    # does not return status — see pipeline notes.
+    always_fetch_status_via_videos_list: true
+
+  channel_size_strata:
+    - micro
+    - small
+    - mid
+    - mega
+
+stratified_discovery:
+  enabled: true
+  strata:
+    - target_age_hypothesis
+    - theme
+    - channel_size
+    - publication_age
+    - language
+    - short_or_long
+  # Soft caps to prevent a few popular seeds/themes/channels from dominating
+  max_share_per_theme: 0.12
+  max_share_per_age_hypothesis: 0.30
+  max_share_per_seed: 0.08
+  max_share_per_language: 0.50
+  publication_age_bins_days: [7, 30, 90, 365]
+  round_robin_seeds: true
+
+relevance:
+  require_any_tokens:
+    - animat
+    - cartoon
+    - short
+    - ai
+    - 2d
+    - 3d
+    - doodle
+    - comic
+  reject_tokens:
+    - live stream
+    - unboxing
+    - gameplay walkthrough full
+    - podcast
+
+dedupe:
+  key: video_id
+  also_hash: [title_normalized, channel_id]
+
+resume:
+  state_path: data/raw/collection_state.json
+  discovered_ids_path: data/raw/discovered_video_ids.jsonl
+  enriched_ids_path: data/raw/enriched_video_ids.jsonl
+  idempotent: true

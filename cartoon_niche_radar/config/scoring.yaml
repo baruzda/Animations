@@ -1,0 +1,100 @@
+# Commercial scoring weights — edit freely; pipeline reads this file.
+
+version: 2
+
+# Evidence gates for declaring winners (age × theme and global highlights).
+# If unmet → INSUFFICIENT_DATA — never declare a winner.
+evidence_gates:
+  min_videos_total: 1000
+  min_videos_per_niche: 30
+  min_channels_per_niche: 5
+  min_independent_channels_per_age_theme: 5
+  max_channel_share_per_niche: 0.25
+  max_unknown_rate: 0.35
+  min_confidence_median: 0.55
+  min_strata_coverage_ratio: 0.5  # fraction of required strata cells non-empty
+  require_post_epoch_for_shorts_opportunity: true
+  declare_winner_requires_gates: true
+
+opportunity_weights:
+  demand: 0.22
+  viral: 0.18
+  competition_inverse: 0.15
+  monetization: 0.18
+  production_complexity_inverse: 0.08
+  ip_potential: 0.10
+  localization: 0.09
+
+demand:
+  median_views_per_day: 0.45
+  p90_views_per_day: 0.25
+  growth_velocity: 0.15
+  google_trends_secondary: 0.15
+
+viral:
+  engagement_rate: 0.35
+  like_rate: 0.20
+  comment_rate: 0.15
+  viral_coefficient: 0.30
+
+competition:
+  video_density: 0.35
+  mega_channel_share: 0.25
+  title_similarity: 0.20
+  theme_saturation_index: 0.20
+
+monetization:
+  rpm_proxy_by_age_theme: 0.40
+  brand_safety: 0.20
+  evergreen_ratio: 0.20
+  platform_monetization_eligibility_proxy: 0.20
+
+production_complexity:
+  dialogue_heavy: 0.25
+  visual_detail: 0.25
+  series_continuity: 0.20
+  music_licensing_risk: 0.15
+  length_factor: 0.15
+
+ip_potential:
+  recurring_character_rate: 0.40
+  series_rate: 0.30
+  distinctive_premise_rate: 0.30
+
+localization:
+  low_dialogue_advantage: 0.35
+  visual_comedy_share: 0.25
+  language_portability: 0.25
+  cultural_specificity_penalty: 0.15
+
+channel_size_analysis:
+  emphasize_buckets: [micro, small]
+  breakthrough_bonus_weight: 0.12
+
+bias_guards:
+  forbid_preferential_age_hypothesis: true
+  watched_hypothesis_age: "13-17"
+  notes: >
+    Do not overweight or declare 13–17 as winner unless empirical opportunity
+    score + evidence gates support it. Control group 18–24 must remain visible.
+  made_for_kids_is_not_age: true
+
+normalization:
+  compare_raw_views_across_ages: false
+  primary_performance_metric: views_per_day
+  shorts_opportunity_epoch: POST_2025_03_31
+  also_compute:
+    - views_per_subscriber
+    - engagement_rate
+    - like_rate
+    - comment_rate
+    - viral_coefficient
+    - channel_size_adjusted_performance
+
+methodology_warnings:
+  - >
+    FACT: YouTube Shorts view counting methodology changed on 2025-03-31.
+    Opportunity scores for Shorts use POST_2025_03_31 only; PRE epoch is reported separately.
+  - >
+    FACT: status.madeForKids is platform metadata, not a specific age band.
+    estimated_target_age is always INFERENCE with confidence.
