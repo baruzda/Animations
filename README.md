@@ -110,6 +110,16 @@ cartoon_niche_radar/
   config/         # YAML configs
 ```
 
+## Cartoon Factory
+
+The guarded research → production automation is documented in [`docs/AUTOMATION_V1.md`](docs/AUTOMATION_V1.md).
+
+Safe local smoke (fake providers, zero external generation calls):
+
+```bash
+caf smoke-fake
+```
+
 ## License
 
 MIT
