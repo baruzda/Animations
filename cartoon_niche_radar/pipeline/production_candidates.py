@@ -20,6 +20,29 @@ def _read_json(path: Path) -> Any:
     return orjson.loads(path.read_bytes())
 
 
+def validate_last_run_for_production(last_run: Any) -> dict[str, Any]:
+    """Validate provenance metadata fail-closed, including legacy artifacts."""
+    if not isinstance(last_run, dict):
+        raise ProductionCandidateGateError("last Radar run metadata is not an object")
+    if "synthetic" not in last_run:
+        raise ProductionCandidateGateError(
+            "last Radar run predates explicit synthetic provenance; rerun Radar before production"
+        )
+    if "generated_at" not in last_run or not last_run.get("generated_at"):
+        raise ProductionCandidateGateError(
+            "last Radar run has no generated_at provenance; rerun Radar before production"
+        )
+    if last_run["synthetic"] is not False:
+        raise ProductionCandidateGateError(
+            "last Radar run is synthetic/sample data; production export is forbidden"
+        )
+    if last_run.get("gates_passed") is not True:
+        raise ProductionCandidateGateError(
+            "last Radar run did not pass evidence gates; production export is forbidden"
+        )
+    return last_run
+
+
 def export_production_candidates(
     *,
     min_confidence: float = 0.65,
@@ -27,8 +50,9 @@ def export_production_candidates(
 ) -> dict[str, Any]:
     """Export only evidence-gated, non-synthetic Radar niches for Factory.
 
-    This is intentionally fail-closed. A synthetic/sample run or a run whose
-    evidence gates failed produces no production candidates.
+    This is intentionally fail-closed. A synthetic/sample run, a legacy run
+    without explicit provenance, or a run whose evidence gates failed produces
+    no production candidates.
     """
     if not 0 <= min_confidence <= 1:
         raise ValueError("min_confidence must be between 0 and 1")
@@ -36,19 +60,12 @@ def export_production_candidates(
         raise ValueError("top_n must be >= 1")
 
     paths = project_paths()
-    last_run = _read_json(paths["outputs"] / "last_run.json")
+    last_run = validate_last_run_for_production(
+        _read_json(paths["outputs"] / "last_run.json")
+    )
     scores_raw = _read_json(paths["scored"] / "niche_scores.json")
 
-    if bool(last_run.get("synthetic", False)):
-        raise ProductionCandidateGateError(
-            "last Radar run is synthetic/sample data; production export is forbidden"
-        )
-    if not bool(last_run.get("gates_passed", False)):
-        raise ProductionCandidateGateError(
-            "last Radar run did not pass evidence gates; production export is forbidden"
-        )
-
-    generated_at = str(last_run.get("generated_at") or "UNKNOWN")
+    generated_at = str(last_run["generated_at"])
     stage = str(last_run.get("stage") or "UNSTAGED")
     radar_run_id = f"{stage}:{generated_at}"
 
