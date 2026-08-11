@@ -9,6 +9,7 @@ on:
       - "cartoon_factory/**"
       - "cartoon_niche_radar/pipeline/production_candidates.py"
       - "tests/test_factory_v1.py"
+      - "tests/test_runway_provider.py"
       - "pyproject.toml"
       - ".github/workflows/factory-ci.yml"
 
@@ -25,13 +26,14 @@ jobs:
       - name: Install
         run: python -m pip install -e ".[dev]"
       - name: Factory tests
-        run: pytest -q tests/test_factory_v1.py
+        run: pytest -q tests/test_factory_v1.py tests/test_runway_provider.py
       - name: Ruff
         run: >-
           ruff check
           cartoon_factory
           cartoon_niche_radar/pipeline/production_candidates.py
           tests/test_factory_v1.py
+          tests/test_runway_provider.py
       - name: Mypy
         run: mypy cartoon_factory
       - name: Fake end-to-end smoke
