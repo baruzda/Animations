@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional
 
 from cartoon_factory.domain.models import CostEvent, Episode
 from cartoon_factory.domain.states import EpisodeState
@@ -30,7 +29,7 @@ class BudgetPolicy:
 
 
 class BudgetGuard:
-    def __init__(self, policy: Optional[BudgetPolicy] = None) -> None:
+    def __init__(self, policy: BudgetPolicy | None = None) -> None:
         self.policy = policy or BudgetPolicy()
 
     def reserve(
@@ -40,7 +39,7 @@ class BudgetGuard:
         provider: str,
         operation: str,
         estimated_usd: float,
-        scene_index: Optional[int] = None,
+        scene_index: int | None = None,
     ) -> CostEvent:
         if estimated_usd < 0:
             raise ValueError("estimated_usd must be >= 0")
