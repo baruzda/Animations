@@ -16,6 +16,10 @@ from cartoon_factory.providers.fakes import (
     FakeVideoProvider,
     FakeVoiceProvider,
 )
+from cartoon_niche_radar.pipeline.production_candidates import (
+    ProductionCandidateGateError,
+    validate_last_run_for_production,
+)
 
 
 def make_pipeline(policy: BudgetPolicy | None = None) -> FactoryPipeline:
@@ -62,6 +66,26 @@ def test_low_confidence_radar_candidate_is_rejected() -> None:
     )
     with pytest.raises(ValueError, match="confidence"):
         candidate.assert_production_safe(min_confidence=0.65)
+
+
+def test_legacy_radar_run_without_synthetic_provenance_is_rejected() -> None:
+    legacy = {
+        "generated_at": "2026-08-11T10:00:00+00:00",
+        "gates_passed": True,
+        "stage": "A",
+    }
+    with pytest.raises(ProductionCandidateGateError, match="predates"):
+        validate_last_run_for_production(legacy)
+
+
+def test_radar_run_without_timestamp_provenance_is_rejected() -> None:
+    run = {
+        "synthetic": False,
+        "gates_passed": True,
+        "stage": "A",
+    }
+    with pytest.raises(ProductionCandidateGateError, match="generated_at"):
+        validate_last_run_for_production(run)
 
 
 def test_script_requires_contiguous_scene_indices() -> None:
