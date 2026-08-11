@@ -1,0 +1,5 @@
+episode_soft_cap_usd: 4.50
+episode_hard_cap_usd: 6.00
+scene_retry_limit: 2
+max_parallel_video_jobs: 3
+stop_when_budget_exceeded: true
