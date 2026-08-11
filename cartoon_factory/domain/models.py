@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import List, Optional
 from uuid import uuid4
 
 from pydantic import BaseModel, Field, field_validator, model_validator
@@ -42,14 +41,14 @@ class SceneScript(BaseModel):
     index: int = Field(ge=1)
     duration_seconds: float = Field(gt=0, le=12)
     location: str = Field(min_length=1)
-    character_ids: List[str] = Field(default_factory=list)
+    character_ids: list[str] = Field(default_factory=list)
     action: str = Field(min_length=1)
     camera: str = Field(min_length=1)
     emotion: str = Field(min_length=1)
-    dialogue: Optional[str] = None
+    dialogue: str | None = None
     video_prompt: str = Field(min_length=1)
-    negative_prompt: Optional[str] = None
-    sfx: List[str] = Field(default_factory=list)
+    negative_prompt: str | None = None
+    sfx: list[str] = Field(default_factory=list)
     transition: str = "cut"
 
 
@@ -59,11 +58,11 @@ class EpisodeScript(BaseModel):
     hook: str = Field(min_length=1)
     audience: str = Field(min_length=1)
     target_duration_seconds: float = Field(gt=0, le=180)
-    characters: List[str] = Field(default_factory=list)
-    scenes: List[SceneScript] = Field(min_length=1)
+    characters: list[str] = Field(default_factory=list)
+    scenes: list[SceneScript] = Field(min_length=1)
 
     @model_validator(mode="after")
-    def validate_scene_contract(self) -> "EpisodeScript":
+    def validate_scene_contract(self) -> EpisodeScript:
         indices = [scene.index for scene in self.scenes]
         if indices != list(range(1, len(indices) + 1)):
             raise ValueError("scene indices must be contiguous and start at 1")
@@ -79,15 +78,15 @@ class EpisodeScript(BaseModel):
 
 class Episode(BaseModel):
     id: str = Field(default_factory=lambda: f"ep_{uuid4().hex[:12]}")
-    idea_id: Optional[str] = None
+    idea_id: str | None = None
     state: EpisodeState = EpisodeState.IDEA
-    script: Optional[EpisodeScript] = None
+    script: EpisodeScript | None = None
     estimated_cost_usd: float = Field(default=0.0, ge=0.0)
     spent_cost_usd: float = Field(default=0.0, ge=0.0)
     created_at: datetime = Field(default_factory=utcnow)
     updated_at: datetime = Field(default_factory=utcnow)
 
-    def transition(self, target: EpisodeState) -> "Episode":
+    def transition(self, target: EpisodeState) -> Episode:
         require_transition(self.state, target)
         self.state = target
         self.updated_at = utcnow()
@@ -97,17 +96,17 @@ class Episode(BaseModel):
 class Asset(BaseModel):
     id: str = Field(default_factory=lambda: f"asset_{uuid4().hex[:12]}")
     episode_id: str
-    scene_index: Optional[int] = None
+    scene_index: int | None = None
     kind: str
     provider: str
     model: str
     storage_uri: str
-    checksum: Optional[str] = None
-    provider_job_id: Optional[str] = None
-    duration_seconds: Optional[float] = None
-    width: Optional[int] = None
-    height: Optional[int] = None
-    prompt_version: Optional[str] = None
+    checksum: str | None = None
+    provider_job_id: str | None = None
+    duration_seconds: float | None = None
+    width: int | None = None
+    height: int | None = None
+    prompt_version: str | None = None
     cost_usd: float = Field(default=0.0, ge=0.0)
     created_at: datetime = Field(default_factory=utcnow)
 
@@ -115,11 +114,11 @@ class Asset(BaseModel):
 class CostEvent(BaseModel):
     id: str = Field(default_factory=lambda: f"cost_{uuid4().hex[:12]}")
     episode_id: str
-    scene_index: Optional[int] = None
+    scene_index: int | None = None
     provider: str
     operation: str
     estimated_usd: float = Field(ge=0.0)
-    actual_usd: Optional[float] = Field(default=None, ge=0.0)
+    actual_usd: float | None = Field(default=None, ge=0.0)
     reserved: bool = True
     created_at: datetime = Field(default_factory=utcnow)
 
@@ -129,8 +128,8 @@ class QCResult(BaseModel):
     passed: bool
     code: str
     message: str
-    scene_index: Optional[int] = None
-    asset_id: Optional[str] = None
+    scene_index: int | None = None
+    asset_id: str | None = None
     created_at: datetime = Field(default_factory=utcnow)
 
 
