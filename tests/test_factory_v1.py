@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import Optional
 
 import pytest
 from pydantic import ValidationError
@@ -19,7 +18,7 @@ from cartoon_factory.providers.fakes import (
 )
 
 
-def make_pipeline(policy: Optional[BudgetPolicy] = None) -> FactoryPipeline:
+def make_pipeline(policy: BudgetPolicy | None = None) -> FactoryPipeline:
     return FactoryPipeline(
         text=FakeTextProvider(),
         image=FakeImageProvider(),
