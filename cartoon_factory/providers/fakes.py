@@ -9,7 +9,12 @@ from cartoon_factory.providers.base import ProviderOutput
 class FakeTextProvider:
     name = "fake-text"
 
+    def estimate_script(self, prompt: str) -> float:
+        del prompt
+        return 0.01
+
     def create_script(self, prompt: str) -> EpisodeScript:
+        del prompt
         return EpisodeScript(
             title="Factory smoke episode",
             logline="A tiny character discovers the wrong door.",
@@ -51,14 +56,19 @@ class FakeTextProvider:
 class FakeImageProvider:
     name = "fake-image"
 
+    def estimate_keyframe(self, scene: SceneScript) -> float:
+        del scene
+        return 0.02
+
     def create_keyframe(self, scene: SceneScript) -> ProviderOutput:
+        cost = self.estimate_keyframe(scene)
         return ProviderOutput(
             provider=self.name,
             model="fake-keyframe-v1",
             payload=f"PNG:scene:{scene.index}".encode(),
             media_type="image/png",
-            estimated_cost_usd=0.02,
-            actual_cost_usd=0.02,
+            estimated_cost_usd=cost,
+            actual_cost_usd=cost,
             provider_job_id=f"fake-img-{scene.index}",
         )
 
@@ -66,20 +76,29 @@ class FakeImageProvider:
 class FakeVideoProvider:
     name = "fake-video"
 
+    def estimate_video(self, scene: SceneScript) -> float:
+        return 0.05 * scene.duration_seconds
+
     def create_video(self, scene: SceneScript, keyframe: ProviderOutput) -> ProviderOutput:
+        del keyframe
+        cost = self.estimate_video(scene)
         return ProviderOutput(
             provider=self.name,
             model="fake-video-v1",
             payload=f"MP4:scene:{scene.index}:{scene.duration_seconds}".encode(),
             media_type="video/mp4",
-            estimated_cost_usd=0.05 * scene.duration_seconds,
-            actual_cost_usd=0.05 * scene.duration_seconds,
+            estimated_cost_usd=cost,
+            actual_cost_usd=cost,
             provider_job_id=f"fake-video-{scene.index}",
         )
 
 
 class FakeVoiceProvider:
     name = "fake-voice"
+
+    def estimate_voice(self, text: str, voice_id: str) -> float:
+        del text, voice_id
+        return 0.0
 
     def create_voice(self, text: str, voice_id: str) -> ProviderOutput:
         return ProviderOutput(
@@ -89,6 +108,22 @@ class FakeVoiceProvider:
             media_type="audio/wav",
             estimated_cost_usd=0.0,
             actual_cost_usd=0.0,
+        )
+
+
+class FakeSoundProvider:
+    name = "fake-sound"
+
+    def estimate_sound(self, prompt: str, duration_seconds: float) -> float:
+        del prompt, duration_seconds
+        return 0.0
+
+    def create_sound(self, prompt: str, duration_seconds: float) -> ProviderOutput:
+        return ProviderOutput(
+            provider=self.name,
+            model="fake-sound-v1",
+            payload=f"WAV:{duration_seconds}:{prompt}".encode(),
+            media_type="audio/wav",
         )
 
 
