@@ -3,7 +3,7 @@ name = "cartoon-niche-radar"
 version = "0.1.0"
 description = "Empirical research pipeline plus guarded AI cartoon production core."
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = { text = "MIT" }
 authors = [{ name = "baruzda" }]
 dependencies = [
@@ -52,7 +52,7 @@ packages = ["cartoon_niche_radar", "cartoon_factory"]
 
 [tool.ruff]
 line-length = 100
-target-version = "py39"
+target-version = "py310"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
