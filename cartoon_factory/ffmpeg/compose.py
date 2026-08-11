@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import shutil
 import subprocess
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable, List
 
 
 class FFmpegUnavailable(RuntimeError):
@@ -19,7 +19,7 @@ def write_concat_file(video_paths: Iterable[Path], target: Path) -> Path:
     if not paths:
         raise ValueError("at least one video path is required")
     target.parent.mkdir(parents=True, exist_ok=True)
-    lines: List[str] = []
+    lines: list[str] = []
     for path in paths:
         escaped = str(path.resolve()).replace("'", "'\\''")
         lines.append(f"file '{escaped}'")
@@ -27,7 +27,11 @@ def write_concat_file(video_paths: Iterable[Path], target: Path) -> Path:
     return target
 
 
-def build_assembly_command(concat_file: Path, output_path: Path) -> List[str]:
+def build_assembly_command(concat_file: Path, output_path: Path) -> list[str]:
+    video_filter = (
+        "scale=720:1280:force_original_aspect_ratio=decrease,"
+        "pad=720:1280:(ow-iw)/2:(oh-ih)/2"
+    )
     return [
         "ffmpeg",
         "-y",
@@ -38,8 +42,7 @@ def build_assembly_command(concat_file: Path, output_path: Path) -> List[str]:
         "-i",
         str(concat_file),
         "-vf",
-        "scale=720:1280:force_original_aspect_ratio=decrease,"
-        "pad=720:1280:(ow-iw)/2:(oh-ih)/2",
+        video_filter,
         "-r",
         "30",
         "-c:v",
