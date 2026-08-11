@@ -10,6 +10,16 @@ Views × Growth Velocity × Engagement × Monetization Potential / Competition
 
 Implemented as configurable **OPPORTUNITY SCORE** (see `cartoon_niche_radar/config/scoring.yaml`).
 
+## Production workspaces
+
+В этом же репозитории отдельно хранится производственная память мультсериалов:
+
+- `technical/` — общая техническая часть производства для всех сериалов;
+- `series/` — отдельная творческая папка на каждый сериал;
+- `series/Бойся своих желаний/` — первый активный сериал.
+
+Исследовательский слой `cartoon_niche_radar/` и творческий канон сериалов не смешиваются: исследование помогает принимать решения, но не переписывает канон автоматически.
+
 ## Epistemic rules
 
 Every analytical claim is tagged:
