@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from typing import Dict, List, Optional
+from typing import Any, Callable
 
 from cartoon_factory.budget import BudgetGuard
 from cartoon_factory.domain.models import Asset, CostEvent, Episode, QCResult
@@ -32,7 +32,7 @@ class FactoryPipeline:
         video: VideoProvider,
         voice: VoiceProvider,
         store: ObjectStore,
-        budget: Optional[BudgetGuard] = None,
+        budget: BudgetGuard | None = None,
     ) -> None:
         self.text = text
         self.image = image
@@ -40,10 +40,10 @@ class FactoryPipeline:
         self.voice = voice
         self.store = store
         self.budget = budget or BudgetGuard()
-        self.assets: List[Asset] = []
-        self.cost_events: List[CostEvent] = []
-        self.qc_results: List[QCResult] = []
-        self.keyframes: Dict[str, ProviderOutput] = {}
+        self.assets: list[Asset] = []
+        self.cost_events: list[CostEvent] = []
+        self.qc_results: list[QCResult] = []
+        self.keyframes: dict[str, ProviderOutput] = {}
 
     def _paid_call(
         self,
@@ -52,9 +52,9 @@ class FactoryPipeline:
         provider: str,
         operation: str,
         estimate: float,
-        scene_index: Optional[int],
-        call,
-    ):
+        scene_index: int | None,
+        call: Callable[[], Any],
+    ) -> Any:
         event = self.budget.reserve(
             episode,
             provider=provider,
@@ -74,7 +74,7 @@ class FactoryPipeline:
         output: ProviderOutput,
         *,
         kind: str,
-        scene_index: Optional[int],
+        scene_index: int | None,
         extension: str,
     ) -> Asset:
         key = f"episodes/{episode.id}/{kind}/scene-{scene_index or 0}.{extension}"
@@ -264,6 +264,6 @@ class FactoryPipeline:
 class _ScriptOutput:
     """Adapter so script generation follows the same budget reconciliation path."""
 
-    def __init__(self, script, cost: float) -> None:
+    def __init__(self, script: Any, cost: float) -> None:
         self.script = script
         self.actual_cost_usd = cost
