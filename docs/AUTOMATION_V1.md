@@ -78,6 +78,8 @@ Production code depends on provider interfaces, not vendor-specific request payl
 
 Every paid provider exposes an estimate method before generation. Fake providers implement the same contracts and are the only providers used by CI.
 
+`cartoon_factory/providers/runway.py` implements a guarded portrait `gen4_turbo` image-to-video adapter. It polls the Runway task, downloads the successful MP4 immediately, and returns owned bytes to Factory rather than persisting an ephemeral provider URL.
+
 ## Budget guard
 
 Default policy:
@@ -105,7 +107,7 @@ Every generated artifact becomes an `Asset` with provider/model/job metadata, co
 
 Provider output must be copied into owned storage. Temporary provider URLs are not treated as durable assets.
 
-V1 ships an in-memory fake object store and a local filesystem object store. R2/S3 is the production adapter target.
+V1 ships an in-memory fake object store and a local filesystem object store. R2/S3 remains the production object-store adapter target.
 
 ## Assembly
 
@@ -155,11 +157,34 @@ caf doctor
 caf status
 ```
 
+The one-scene Runway smoke is deliberately harder to trigger:
+
+```bash
+caf smoke-runway \
+  --image ./keyframe.png \
+  --seconds 5 \
+  --max-usd 0.50 \
+  --confirm-paid
+```
+
+Safety properties:
+
+- `RUNWAYML_API_SECRET` must exist;
+- `--confirm-paid` is mandatory;
+- `--max-usd` is mandatory in the budget path and is capped at $1.00 for this smoke command;
+- only one scene is generated;
+- retry count is zero;
+- a local keyframe is required;
+- output is copied to `data/factory/paid-smoke/runway-smoke.mp4` immediately.
+
+Merely configuring a Runway API key never starts a paid generation.
+
 ## CI
 
 `.github/workflows/factory-ci.yml` runs:
 
 - Factory unit tests;
+- mocked Runway adapter tests;
 - scoped Ruff;
 - scoped mypy;
 - `caf smoke-fake`.
@@ -176,6 +201,9 @@ Implemented:
 - structured script schema;
 - provider protocols;
 - deterministic fake providers;
+- guarded Runway Gen-4 Turbo video adapter;
+- explicit one-scene paid-smoke command;
+- immediate provider-output download contract;
 - asset checksums/storage contract;
 - budget guard and CostEvents;
 - preproduction -> human gate;
@@ -189,7 +217,7 @@ Not yet enabled:
 - persistent SQLAlchemy repository for Factory entities;
 - job queue/worker recovery;
 - FastAPI/n8n webhooks;
-- Runway/OpenAI real provider adapters;
+- real Text/Image/Voice/SFX provider adapters;
 - R2 adapter;
 - real FFmpeg media integration in the orchestrator;
 - Streamlit Factory dashboard;
@@ -197,8 +225,8 @@ Not yet enabled:
 
 These are subsequent V1 slices, not silently simulated capabilities.
 
-## First paid smoke after provider adapter
+## First paid smoke
 
-The first real paid smoke should be exactly one portrait scene, with an explicit cost confirmation flag and a hard cap below one US dollar. The command must never run merely because an API key exists.
+The first paid test is intentionally limited to one portrait Runway scene using a user-supplied keyframe. Do not automate or batch it until this path has been manually reviewed and its actual output/cost confirmed.
 
 No automatic publication or deployment is part of V1.
