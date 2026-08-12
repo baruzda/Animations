@@ -1,16 +1,18 @@
-# ASSET MANIFEST v0.1
+# ASSET MANIFEST v1.0
 
-Цель: минимальный набор переиспользуемых assets, достаточный для пилота и первых 5–10 эпизодов.
+**Authority:** сначала читать `../canon/CANON_INDEX.md`. Этот файл описывает production-набор, но не имеет права переопределять утверждённые masters.
 
-## A. Клепп
+## Approved master classes
 
-### Model sheet
-- front;
-- 3/4 left;
-- 3/4 right;
-- profile;
-- back;
-- silhouette sheet.
+- `KLEPP_MASTER` — спецификация в `../visual/MODEL_SHEET_LOCK.md`.
+- `FINCH_MASTER` — спецификация в `../visual/MODEL_SHEET_LOCK.md`.
+- `DUO_SCALE_MASTER` — Клепп 180 см / Финч 167 см.
+- `WISH_MACHINE_MASTER` — спецификация в `../visual/STYLE_GUIDE.md`.
+- `WORKSHOP_MASTER` — спецификация в `../visual/STYLE_GUIDE.md`.
+
+Любая старая версия этих пяти классов автоматически NON-CANON.
+
+## A. Клепп — производные assets
 
 ### Expressions
 - neutral;
@@ -32,16 +34,15 @@
 - running;
 - bracing against force;
 - buried/blocked reaction;
-- arms akimbo / false confidence.
+- false confidence.
 
 ### Mechanical hand
-Отдельный reference sheet:
+Производные изображения обязаны сохранять ровно 3 пальца:
 - palm/back;
-- exactly 3 fingers;
+- open;
 - closed grip;
 - precision grip;
-- screwdriver/tool mode;
-- electrode/spark mode.
+- side/3⁄4 views.
 
 ### Monocle
 - retracted;
@@ -49,17 +50,7 @@
 - full telescopic extension;
 - glare/reflection overlay.
 
----
-
-## B. Финч
-
-### Model sheet
-- front;
-- 3/4 left;
-- 3/4 right;
-- profile;
-- back with backpack;
-- silhouette sheet.
+## B. Финч — производные assets
 
 ### Expressions
 - neutral;
@@ -68,10 +59,9 @@
 - interested;
 - delighted by rare object;
 - concern;
-- panic while still writing;
+- panic while still observing;
 - dry disappointment;
-- shock;
-- «I told you» without smugness.
+- shock.
 
 ### Poses
 - notebook open;
@@ -81,36 +71,18 @@
 - holding labelled specimen;
 - running with scarf follow-through;
 - crouched behind cover;
-- standing in calm contrast to chaos.
+- calm contrast to chaos.
 
 ### Signature props
 - round brass glasses;
 - red-orange long scarf;
-- modular mustard/orange backpack-cabinet;
+- rigid mustard backpack-cabinet;
 - accordion field notebook;
-- labels/tags/stickers set.
+- labels/tags set.
 
----
+## C. Машина желаний — states
 
-## C. Машина желаний
-
-### Master views
-- front;
-- 3/4;
-- side;
-- back;
-- silhouette.
-
-### Mandatory elements
-- handmade asymmetrical body;
-- main lamp / bulb;
-- readable activation area;
-- lever or dial labelled «Множитель»;
-- power cable/plug;
-- pipes / gauges / indicator lights;
-- one visually memorable red control.
-
-### States
+Все состояния производятся только из `WISH_MACHINE_MASTER`:
 - off;
 - idle;
 - listening;
@@ -120,40 +92,30 @@
 - emergency stop;
 - smoking aftermath.
 
----
+Запрещено менять габариты, базовый корпус или добавлять кабину/кресло/комнату.
 
-## D. Мастерская
+## D. Мастерская — camera presets
 
-### Base layers
-1. clean master background;
-2. back wall / shelves;
-3. machine zone;
-4. central table;
-5. foreground clutter;
-6. window / key light layer;
-7. practical light overlay;
-8. steam/dust particles;
-9. shadow overlays.
-
-### Camera presets
+Все планы производятся только из `WORKSHOP_MASTER`:
 - wide establishing;
+- reverse wide;
 - medium two-shot;
 - machine medium;
-- Klепп close-up position;
-- Финч close-up position;
+- Klepp close-up position;
+- Finch close-up position;
 - table insert;
 - floor/plug insert;
 - catastrophe wide.
 
----
+Планировка не пересобирается под каждый shot.
 
-## E. Пилот 01 props
+## E. EP01 props
 
 - rubber duck master;
 - duck variants via scale/rotation only;
 - sandwich;
-- 10-coin stack / loose coins;
-- «Множитель» label and dial;
+- 10 coins;
+- multiplier control/dial;
 - power plug close-up;
 - foreground duck pile masks.
 
@@ -167,35 +129,33 @@
 - speed lines / smear accent;
 - dust;
 - object pop-in;
-- warning light pulse;
+- warning pulse;
 - comic impact frame.
 
 ## G. Audio kit
 
-- Klепп voice preset;
-- Финч voice preset;
-- machine idle;
-- machine accept;
-- machine overload;
-- metal hand clicks;
+- Klepp voice preset;
+- Finch voice preset;
+- machine idle / accept / overload;
+- mechanical hand clicks;
 - monocle telescope click;
 - notebook flip;
 - backpack drawer;
 - duck squeak;
 - impacts;
 - room tone;
-- reusable music bed;
-- sting before/after punchline.
+- music bed;
+- punchline sting.
 
 ## Naming convention
 
 ```text
 CHAR_KLEPP_<type>_<state>_v###
 CHAR_FINCH_<type>_<state>_v###
-PROP_WISHMACHINE_<view/state>_v###
-BG_WORKSHOP_<camera/layer>_v###
+PROP_WISHMACHINE_<view-state>_v###
+BG_WORKSHOP_<camera-layer>_v###
 FX_<name>_v###
 AUD_<name>_v###
 ```
 
-Approved assets must never be silently overwritten. New generations get a new version, and the approved version is referenced from the episode manifest.
+Approved assets are immutable. Новый вариант получает новый version number и проходит canon gate.
