@@ -1,0 +1,223 @@
+{
+  "id": "ep01-wish-duck-v1",
+  "title": "Бойся своих желаний — EP01 «Хочу уточку»",
+  "width": 1080,
+  "height": 1920,
+  "fps": 30,
+  "background": "#171817",
+  "assets": {
+    "EP01_SH010_AI_VIDEO": {"type": "video", "status": "missing", "sourceOfTruth": "series/Бойся своих желаний/storyboards/shot_specs/SH010.md"},
+    "EP01_SH080_AI_VIDEO": {"type": "video", "status": "missing", "sourceOfTruth": "series/Бойся своих желаний/storyboards/shot_specs/SH080.md"},
+    "EP01_SH090_CALLBACK_EDIT": {"type": "video", "status": "missing", "sourceOfTruth": "series/Бойся своих желаний/storyboards/shot_specs/SH090.md", "notes": "Reuse SH010 material with a different crop plus approved continuation."},
+
+    "BG_WORKSHOP_WIDE": {"type": "image", "status": "missing", "sourceOfTruth": "series/Бойся своих желаний/assets/ASSET_MANIFEST.md"},
+    "BG_WORKSHOP_TWO_SHOT": {"type": "image", "status": "missing", "sourceOfTruth": "series/Бойся своих желаний/assets/ASSET_MANIFEST.md"},
+    "BG_WORKSHOP_MACHINE_MEDIUM": {"type": "image", "status": "missing", "sourceOfTruth": "series/Бойся своих желаний/assets/ASSET_MANIFEST.md"},
+    "BG_WORKSHOP_KLEPP_CLOSE": {"type": "image", "status": "missing", "sourceOfTruth": "series/Бойся своих желаний/assets/ASSET_MANIFEST.md"},
+    "BG_WORKSHOP_FINCH_CLOSE": {"type": "image", "status": "missing", "sourceOfTruth": "series/Бойся своих желаний/assets/ASSET_MANIFEST.md"},
+    "BG_WORKSHOP_PLUG_INSERT": {"type": "image", "status": "missing", "sourceOfTruth": "series/Бойся своих желаний/assets/ASSET_MANIFEST.md"},
+
+    "CHAR_FINCH_NOTEBOOK": {"type": "image", "status": "missing", "sourceOfTruth": "series/Бойся своих желаний/assets/ASSET_MANIFEST.md"},
+    "CHAR_FINCH_SKEPTICAL": {"type": "image", "status": "missing", "sourceOfTruth": "series/Бойся своих желаний/assets/ASSET_MANIFEST.md"},
+    "CHAR_FINCH_CONCERN": {"type": "image", "status": "missing", "sourceOfTruth": "series/Бойся своих желаний/assets/ASSET_MANIFEST.md"},
+    "CHAR_FINCH_BACKPACK_OPEN": {"type": "image", "status": "missing", "sourceOfTruth": "series/Бойся своих желаний/assets/ASSET_MANIFEST.md"},
+    "CHAR_KLEPP_PRESENTING": {"type": "image", "status": "missing", "sourceOfTruth": "series/Бойся своих желаний/assets/ASSET_MANIFEST.md"},
+    "CHAR_KLEPP_CONFIDENT": {"type": "image", "status": "missing", "sourceOfTruth": "series/Бойся своих желаний/assets/ASSET_MANIFEST.md"},
+    "CHAR_KLEPP_FAKE_CALM": {"type": "image", "status": "missing", "sourceOfTruth": "series/Бойся своих желаний/assets/ASSET_MANIFEST.md"},
+    "CHAR_KLEPP_DELIGHT": {"type": "image", "status": "missing", "sourceOfTruth": "series/Бойся своих желаний/assets/ASSET_MANIFEST.md"},
+    "CHAR_KLEPP_SURPRISE": {"type": "image", "status": "missing", "sourceOfTruth": "series/Бойся своих желаний/assets/ASSET_MANIFEST.md"},
+
+    "WISH_MACHINE_IDLE": {"type": "image", "status": "missing", "sourceOfTruth": "series/Бойся своих желаний/assets/ASSET_MANIFEST.md"},
+    "WISH_MACHINE_ACCEPT": {"type": "image", "status": "missing", "sourceOfTruth": "series/Бойся своих желаний/assets/ASSET_MANIFEST.md"},
+
+    "PROP_SANDWICH": {"type": "image", "status": "missing", "sourceOfTruth": "series/Бойся своих желаний/assets/ASSET_MANIFEST.md"},
+    "PROP_COINS_10": {"type": "image", "status": "missing", "sourceOfTruth": "series/Бойся своих желаний/assets/ASSET_MANIFEST.md"},
+    "PROP_MULTIPLIER": {"type": "image", "status": "missing", "sourceOfTruth": "series/Бойся своих желаний/assets/ASSET_MANIFEST.md"},
+    "PROP_DUCK_SAMPLE_184": {"type": "image", "status": "missing", "sourceOfTruth": "series/Бойся своих желаний/assets/ASSET_MANIFEST.md"},
+    "PROP_DUCK_SINGLE": {"type": "image", "status": "missing", "sourceOfTruth": "series/Бойся своих желаний/assets/ASSET_MANIFEST.md"},
+    "PROP_DUCK_PILES": {"type": "image", "status": "missing", "sourceOfTruth": "series/Бойся своих желаний/assets/ASSET_MANIFEST.md"},
+    "PROP_POWER_PLUG": {"type": "image", "status": "missing", "sourceOfTruth": "series/Бойся своих желаний/assets/ASSET_MANIFEST.md"},
+
+    "AUD_MACHINE_PUFF": {"type": "audio", "status": "missing", "sourceOfTruth": "series/Бойся своих желаний/assets/ASSET_MANIFEST.md"},
+    "AUD_COIN_MONOCLE": {"type": "audio", "status": "missing", "sourceOfTruth": "series/Бойся своих желаний/assets/ASSET_MANIFEST.md"},
+    "AUD_DUCK_DROP": {"type": "audio", "status": "missing", "sourceOfTruth": "series/Бойся своих желаний/assets/ASSET_MANIFEST.md"},
+    "AUD_POWER_UNPLUG": {"type": "audio", "status": "missing", "sourceOfTruth": "series/Бойся своих желаний/assets/ASSET_MANIFEST.md"},
+    "AUD_DUCK_SQUEAK": {"type": "audio", "status": "missing", "sourceOfTruth": "series/Бойся своих желаний/assets/ASSET_MANIFEST.md"},
+    "AUD_QUACK_SINGLE": {"type": "audio", "status": "missing", "sourceOfTruth": "series/Бойся своих желаний/assets/ASSET_MANIFEST.md"},
+    "AUD_QUACK_MASS": {"type": "audio", "status": "missing", "sourceOfTruth": "series/Бойся своих желаний/assets/ASSET_MANIFEST.md"}
+  },
+  "scenes": [
+    {
+      "id": "SH010",
+      "durationSec": 3,
+      "productionClass": "full-ai-video",
+      "sourceSpec": "series/Бойся своих желаний/storyboards/shot_specs/SH010.md",
+      "beat": "Cold open: мастерская уже завалена утками; Клепп по грудь в завале, Финч глубже, Машина желаний на фоне.",
+      "visual": {"kind": "asset-slot", "slot": "EP01_SH010_AI_VIDEO", "label": "Cold open / duck catastrophe", "mediaType": "video", "fallbackColor": "#34302b"},
+      "camera": "static"
+    },
+    {
+      "id": "SH020",
+      "durationSec": 2,
+      "productionClass": "limited",
+      "sourceSpec": "series/Бойся своих желаний/storyboards/shot_specs/SH020.md",
+      "beat": "Hard cut в спокойную мастерскую. Финч ставит блокнот на стол.",
+      "visual": {"kind": "asset-slot", "slot": "BG_WORKSHOP_WIDE", "label": "Calm workshop wide", "mediaType": "image", "fallbackColor": "#3b332a"},
+      "camera": "static",
+      "text": "47 секунд назад",
+      "layers": [
+        {"id": "finch", "slot": "CHAR_FINCH_NOTEBOOK", "label": "Finch with notebook", "scale": 1.02, "xPct": 2, "parallaxX": 1.2, "zIndex": 20}
+      ]
+    },
+    {
+      "id": "SH030",
+      "durationSec": 5,
+      "productionClass": "limited",
+      "sourceSpec": "series/Бойся своих желаний/storyboards/shot_specs/SH030.md",
+      "beat": "Клепп презентует Машину желаний; монокль выдвигается. Финч остаётся скептичен.",
+      "visual": {"kind": "asset-slot", "slot": "BG_WORKSHOP_TWO_SHOT", "label": "Workshop medium two-shot", "mediaType": "image", "fallbackColor": "#302c27"},
+      "camera": "push-in",
+      "layers": [
+        {"id": "machine", "slot": "WISH_MACHINE_IDLE", "label": "Wish machine idle", "scale": 0.98, "parallaxX": 0.4, "zIndex": 12},
+        {"id": "klepp", "slot": "CHAR_KLEPP_PRESENTING", "label": "Klepp presenting", "scale": 1.02, "xPct": -1.5, "parallaxX": -1.5, "zIndex": 20},
+        {"id": "finch", "slot": "CHAR_FINCH_SKEPTICAL", "label": "Finch skeptical", "scale": 1.01, "xPct": 1.5, "parallaxX": 1.2, "zIndex": 21}
+      ]
+    },
+    {
+      "id": "SH040",
+      "durationSec": 5,
+      "productionClass": "limited-fx",
+      "sourceSpec": "series/Бойся своих желаний/storyboards/shot_specs/SH040.md",
+      "beat": "Первый тест: машина создаёт бутерброд; Финч сразу документирует результат.",
+      "visual": {"kind": "asset-slot", "slot": "BG_WORKSHOP_MACHINE_MEDIUM", "label": "Wish machine medium", "mediaType": "image", "fallbackColor": "#2f3029"},
+      "camera": "push-in",
+      "layers": [
+        {"id": "machine", "slot": "WISH_MACHINE_ACCEPT", "label": "Wish machine accepted state", "scale": 1.01, "parallaxY": -0.6, "zIndex": 12},
+        {"id": "sandwich", "slot": "PROP_SANDWICH", "label": "Sandwich", "scale": 0.96, "yPct": 2, "parallaxY": 2.5, "zIndex": 30},
+        {"id": "finch", "slot": "CHAR_FINCH_NOTEBOOK", "label": "Finch documenting", "scale": 1.01, "xPct": 2, "zIndex": 24}
+      ],
+      "audioEvents": [
+        {"id": "SFX040_PUFF", "kind": "sfx", "slot": "AUD_MACHINE_PUFF", "atSec": 1.2, "volume": 0.9}
+      ]
+    },
+    {
+      "id": "SH050",
+      "durationSec": 5,
+      "productionClass": "limited-fx",
+      "sourceSpec": "series/Бойся своих желаний/storyboards/shot_specs/SH050.md",
+      "beat": "Второй тест: ровно десять монет; последняя ударяет Клеппа в монокль.",
+      "visual": {"kind": "asset-slot", "slot": "BG_WORKSHOP_KLEPP_CLOSE", "label": "Klepp medium close", "mediaType": "image", "fallbackColor": "#332f2a"},
+      "camera": "push-in",
+      "layers": [
+        {"id": "klepp", "slot": "CHAR_KLEPP_CONFIDENT", "label": "Klepp confident", "scale": 1.02, "parallaxX": -0.8, "zIndex": 20},
+        {"id": "coins", "slot": "PROP_COINS_10", "label": "Ten coins motion layer", "scale": 1.02, "parallaxX": 3.5, "parallaxY": -1.5, "zIndex": 30}
+      ],
+      "audioEvents": [
+        {"id": "SFX050_COIN_HIT", "kind": "sfx", "slot": "AUD_COIN_MONOCLE", "atSec": 3.0, "volume": 1}
+      ]
+    },
+    {
+      "id": "SH060",
+      "durationSec": 5,
+      "productionClass": "limited",
+      "sourceSpec": "series/Бойся своих желаний/storyboards/shot_specs/SH060.md",
+      "beat": "Ложная уверенность. Финч замечает Множитель, выставленный далеко вправо.",
+      "visual": {"kind": "asset-slot", "slot": "BG_WORKSHOP_TWO_SHOT", "label": "Workshop two-shot to multiplier insert", "mediaType": "image", "fallbackColor": "#302c27"},
+      "camera": "pan-right",
+      "layers": [
+        {"id": "klepp", "slot": "CHAR_KLEPP_FAKE_CALM", "label": "Klepp false confidence", "scale": 1.01, "xPct": -2, "zIndex": 20},
+        {"id": "finch", "slot": "CHAR_FINCH_CONCERN", "label": "Finch notices control", "scale": 1.01, "xPct": 1, "zIndex": 21},
+        {"id": "multiplier", "slot": "PROP_MULTIPLIER", "label": "Multiplier control insert", "scale": 1.04, "xPct": 4, "parallaxX": 3.5, "zIndex": 32}
+      ]
+    },
+    {
+      "id": "SH070",
+      "durationSec": 5,
+      "productionClass": "limited-fx",
+      "sourceSpec": "series/Бойся своих желаний/storyboards/shot_specs/SH070.md",
+      "beat": "Финч открывает рюкзак-шкаф; утка-образец 184 запускает роковое желание.",
+      "visual": {"kind": "asset-slot", "slot": "BG_WORKSHOP_FINCH_CLOSE", "label": "Finch backpack insert / Klepp reaction", "mediaType": "image", "fallbackColor": "#353027"},
+      "camera": "push-in",
+      "layers": [
+        {"id": "finch", "slot": "CHAR_FINCH_BACKPACK_OPEN", "label": "Finch opens backpack drawer", "scale": 1.02, "xPct": -1, "zIndex": 20},
+        {"id": "duck-sample", "slot": "PROP_DUCK_SAMPLE_184", "label": "Duck sample 184", "scale": 1.06, "yPct": 2, "parallaxY": 2.4, "zIndex": 31},
+        {"id": "klepp", "slot": "CHAR_KLEPP_DELIGHT", "label": "Klepp notices duck", "scale": 1.01, "xPct": 2, "zIndex": 22},
+        {"id": "machine", "slot": "WISH_MACHINE_ACCEPT", "label": "Machine lights up", "opacity": 0.9, "zIndex": 12}
+      ],
+      "audioEvents": [
+        {"id": "SFX070_FIRST_DUCK", "kind": "sfx", "slot": "AUD_DUCK_DROP", "atSec": 4.35, "volume": 0.85}
+      ]
+    },
+    {
+      "id": "SH080",
+      "durationSec": 6,
+      "productionClass": "full-ai-video",
+      "sourceSpec": "series/Бойся своих желаний/storyboards/shot_specs/SH080.md",
+      "beat": "Эскалация: утки превращаются в поток, Множитель уходит к максимуму, машина вибрирует, Клепп держит рычаг трёхпалой рукой.",
+      "visual": {"kind": "asset-slot", "slot": "EP01_SH080_AI_VIDEO", "label": "Duck escalation", "mediaType": "video", "fallbackColor": "#3a3324"},
+      "camera": "static"
+    },
+    {
+      "id": "SH090",
+      "durationSec": 8,
+      "productionClass": "reuse",
+      "sourceSpec": "series/Бойся своих желаний/storyboards/shot_specs/SH090.md",
+      "beat": "Callback к cold open: другой crop, Финч почти скрыт утками, Клепп добирается до вилки.",
+      "visual": {"kind": "asset-slot", "slot": "EP01_SH090_CALLBACK_EDIT", "label": "Cold-open callback / continuation", "mediaType": "video", "fallbackColor": "#383126"},
+      "camera": "push-in"
+    },
+    {
+      "id": "SH100",
+      "durationSec": 4,
+      "productionClass": "limited-fx",
+      "sourceSpec": "series/Бойся своих желаний/storyboards/shot_specs/SH100.md",
+      "beat": "Клепп выдёргивает вилку. Тишина. Последняя утка падает ему на голову.",
+      "visual": {"kind": "asset-slot", "slot": "BG_WORKSHOP_PLUG_INSERT", "label": "Plug insert to reaction", "mediaType": "image", "fallbackColor": "#2f2b26"},
+      "camera": "push-out",
+      "layers": [
+        {"id": "plug", "slot": "PROP_POWER_PLUG", "label": "Power plug", "scale": 1.03, "parallaxX": -2, "zIndex": 28},
+        {"id": "duck", "slot": "PROP_DUCK_SINGLE", "label": "Last falling duck", "scale": 1.04, "yPct": -2, "parallaxY": 7, "zIndex": 35},
+        {"id": "klepp", "slot": "CHAR_KLEPP_SURPRISE", "label": "Klepp reaction", "scale": 1.02, "zIndex": 22}
+      ],
+      "audioEvents": [
+        {"id": "SFX100_UNPLUG", "kind": "sfx", "slot": "AUD_POWER_UNPLUG", "atSec": 0.8, "volume": 1},
+        {"id": "SFX100_DUCK", "kind": "sfx", "slot": "AUD_DUCK_SQUEAK", "atSec": 2.7, "volume": 0.8}
+      ]
+    },
+    {
+      "id": "SH110",
+      "durationSec": 2,
+      "productionClass": "sound-led",
+      "sourceSpec": "series/Бойся своих желаний/storyboards/shot_specs/SH110.md",
+      "beat": "Одна утка говорит «Кря», затем все утки отвечают хором. Smash cut to black.",
+      "visual": {"kind": "asset-slot", "slot": "BG_WORKSHOP_KLEPP_CLOSE", "label": "Duck close-up / Klepp reaction", "mediaType": "image", "fallbackColor": "#26231f"},
+      "camera": "push-in",
+      "layers": [
+        {"id": "duck-single", "slot": "PROP_DUCK_SINGLE", "label": "Speaking duck", "scale": 1.08, "yPct": 2, "parallaxY": 1.8, "zIndex": 34},
+        {"id": "duck-piles", "slot": "PROP_DUCK_PILES", "label": "Foreground duck piles", "scale": 1.02, "parallaxX": 0.8, "zIndex": 30},
+        {"id": "klepp", "slot": "CHAR_KLEPP_SURPRISE", "label": "Klepp looks down", "scale": 1.01, "zIndex": 20}
+      ],
+      "audioEvents": [
+        {"id": "SFX110_QUACK_ONE", "kind": "sfx", "slot": "AUD_QUACK_SINGLE", "atSec": 0.2, "volume": 0.9},
+        {"id": "SFX110_QUACK_ALL", "kind": "sfx", "slot": "AUD_QUACK_MASS", "atSec": 1.25, "volume": 1.1}
+      ]
+    }
+  ],
+  "captions": [
+    {"id": "CAP010", "startSec": 0.35, "endSec": 2.6, "text": "ФИНЧ! ОТМЕНИ ЖЕЛАНИЕ!"},
+    {"id": "CAP030A", "startSec": 5.2, "endSec": 8.1, "text": "Любое желание. Без посредников, магии и бумажной волокиты."},
+    {"id": "CAP030B", "startSec": 8.2, "endSec": 9.8, "text": "Последнее звучит опаснее всего."},
+    {"id": "CAP040A", "startSec": 10.2, "endSec": 11.3, "text": "Хочу бутерброд."},
+    {"id": "CAP040B", "startSec": 12.4, "endSec": 14.7, "text": "Съедобность пока не подтверждена."},
+    {"id": "CAP050A", "startSec": 15.2, "endSec": 16.5, "text": "Хочу десять монет."},
+    {"id": "CAP050B", "startSec": 18.2, "endSec": 19.3, "text": "Точность."},
+    {"id": "CAP060A", "startSec": 20.3, "endSec": 22.6, "text": "Видишь? Абсолютно безопасно."},
+    {"id": "CAP060B", "startSec": 23.1, "endSec": 24.7, "text": "Клепп… а это что?"},
+    {"id": "CAP070A", "startSec": 25.8, "endSec": 27.3, "text": "Всегда хотел такую."},
+    {"id": "CAP070B", "startSec": 27.7, "endSec": 29.4, "text": "Это была фигура речи."},
+    {"id": "CAP090A", "startSec": 36.35, "endSec": 38.8, "text": "ФИНЧ! ОТМЕНИ ЖЕЛАНИЕ!"},
+    {"id": "CAP090B", "startSec": 39.1, "endSec": 42.8, "text": "Я сейчас документирую, почему это невозможно."},
+    {"id": "CAP110A", "startSec": 48.15, "endSec": 48.85, "text": "Кря."},
+    {"id": "CAP110B", "startSec": 49.2, "endSec": 49.85, "text": "КРЯ!"}
+  ]
+}

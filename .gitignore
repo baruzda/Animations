@@ -21,6 +21,10 @@ venv/
 .coverage
 htmlcov/
 
+# Node / Remotion
+node_modules/
+video/out/
+
 # Data (large / regenerable) — keep directory placeholders
 data/raw/**
 !data/raw/.gitkeep
