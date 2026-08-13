@@ -7,6 +7,7 @@
     "check": "tsc --noEmit",
     "render": "remotion render src/index.ts Episode out/episode.mp4",
     "render:example": "remotion render src/index.ts Episode out/example.mp4 --props=manifests/example.json",
+    "render:ep01": "remotion render src/index.ts EP01WishDuck out/ep01-wish-duck-animatic.mp4",
     "skills:install": "npx skills add remotion-dev/skills"
   },
   "dependencies": {

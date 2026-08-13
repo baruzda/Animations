@@ -1,20 +1,22 @@
 ---
 name: video-production
 description: Assemble approved animation assets into reproducible Remotion episodes, shorts, previews, captions, audio and renders without bypassing production approval gates.
-version: 0.1.0
+version: 0.2.0
 ---
 
 # Video Production
 
-Use this skill for Remotion-based episode assembly, edit automation, captions, audio placement, motion treatment, preview and rendering in this repository.
+Use this skill for Remotion-based episode assembly, animatics, edit automation, captions, audio placement, limited motion, preview and rendering in this repository.
 
 ## Role
 
-Remotion is the deterministic production layer. It does **not** decide canon and it does **not** authorize expensive AI-video generation.
+Remotion is the deterministic production layer. It does **not** decide canon and does **not** authorize expensive AI-video generation.
 
-The intended chain is:
+Intended chain:
 
-`approved idea/script -> approved animatic/shot list -> approved assets -> episode manifest -> Remotion assembly -> QC -> render`
+`approved idea/script -> approved shot plan -> manifest + asset slots -> approved/draft assets -> Remotion assembly -> QC -> render`
+
+A manifest may be assembled before every media asset is ready. Missing slots must remain explicit diagnostic data.
 
 ## Required context
 
@@ -23,43 +25,66 @@ Before editing a real episode:
 1. Read `technical/PRODUCTION_PIPELINE.md`.
 2. Read `technical/SHOT_APPROVAL_GATE.md`.
 3. Read `technical/REMOTION_INTEGRATION.md`.
-4. Read the active series `CANON.md`, current episode/shot material, and approved references.
+4. Read the active series `canon/CANON_INDEX.md` first, then the current script/storyboard/shot specs and approved references it routes to.
 5. Treat missing approvals as missing data. Do not infer a new canonical face, costume, prop, location, voice or visual style.
 
 ## Upstream Remotion knowledge
 
-Use the official Remotion Agent Skills for API and implementation knowledge. Install or refresh them from the `video/` workspace with:
+Use the official Remotion Agent Skills for current API/implementation knowledge. Install or refresh them from `video/` with:
 
 `npm run skills:install`
 
-The upstream router is `remotion-best-practices`; use its specialist skills for markup, captions, rendering, Studio, multimedia and upgrades.
-
-Do not copy upstream skill contents into this local skill. The local skill owns repository-specific production policy; upstream owns Remotion technical best practices.
+Use upstream specialist skills for markup, captions, rendering, Studio, multimedia and upgrades. Do not vendor upstream skill contents into this repository.
 
 ## Manifest-first workflow
 
-1. Convert the approved shot list into an episode manifest matching `video/src/types.ts`.
-2. Keep each scene explicit: stable `id`, duration, visual source, camera treatment, optional voice/SFX, and optional scene text.
-3. Prefer cheap limited-animation treatments (`push-in`, `push-out`, `pan-left`, `pan-right`) for layered/still material.
-4. Use generated full-motion clips only where the approved production plan calls for them.
-5. Missing media must be represented by a diagnostic color/placeholder scene. Never silently substitute an unapproved asset.
-6. Keep timing in seconds in the manifest; convert to frames in Remotion using the manifest FPS.
-7. Keep captions as timed data, not hand-positioned timeline fragments.
-8. Keep branding/safe-area behavior in reusable components rather than repeating it per episode.
+1. Convert the approved shot list into a manifest matching `video/src/types.ts`.
+2. Preserve stable shot IDs and exact storyboard duration unless the creative source explicitly changes.
+3. Register expected media in `manifest.assets` instead of inventing file paths.
+4. Each asset slot must record type, status and source-of-truth context when available.
+5. `missing` means placeholder/skip, never substitute.
+6. Use `draft` only for a real review asset; visual drafts remain visibly watermarked by the renderer.
+7. Use `approved` only after the repository's existing canon/shot gate passes.
+8. Prefer limited-animation layers and deterministic camera/parallax for still material.
+9. Use full generated motion only for shots already classified for it by the production plan.
+10. Put mid-shot sounds in timed `audioEvents`; do not force every SFX to start at frame zero.
+11. Keep captions as global timed data and inside mobile-safe composition.
+
+## EP01 reference implementation
+
+The first real manifest is:
+
+`video/manifests/ep01-wish-duck.json`
+
+It mirrors `series/Бойся своих желаний/storyboards/EP01_WISH_DUCK.md`:
+
+- SH010 full AI-video, 3 sec;
+- SH020–SH070 limited / limited+FX;
+- SH080 full AI-video, 6 sec;
+- SH090 reuse/edit;
+- SH100 limited+FX;
+- SH110 sound-led.
+
+Do not turn SH090 into new hidden full-generation scope. Unique expensive motion remains approximately 9 seconds.
+
+Asset checklist: `video/EP01_ASSET_SLOTS.md`.
 
 ## Quality gates
 
-Before declaring an episode render-ready:
+Before declaring an episode master-ready:
 
 - every scene ID is stable and unique;
-- timeline duration equals the sum of scene durations;
-- no missing referenced local media;
+- timeline duration equals the intended storyboard duration;
+- no required visual/audio slot remains `missing`;
+- no production asset remains `draft`;
 - captions stay inside mobile-safe area and do not cover critical action;
-- voice/SFX paths resolve;
 - aspect ratio and FPS match the intended master;
-- no accidental intro card before the hook;
-- render is reproducible from the manifest;
-- changes do not alter series canon.
+- no accidental intro card appears before the hook;
+- render is reproducible from manifest + assets + code;
+- changes do not alter canon;
+- expensive generated seconds stay within the approved production plan.
+
+A structural animatic may be considered review-ready with missing slots if they render as diagnostic slates and the missing list is reported explicitly.
 
 ## Validation
 
@@ -67,11 +92,12 @@ From `video/`:
 
 - `npm install`
 - `npm run check`
-- `npm run studio` for interactive preview
-- `npm run render:example` for a dependency-free smoke composition
-- `npm run render -- --props=<manifest.json>` for a real manifest
+- `npm run studio`
+- `npm run render:example`
+- `npm run render:ep01` for the real EP01 structural animatic
+- `npm run render -- --props=<manifest.json>` for a generic manifest
 
-If a command cannot run because the environment lacks Node/Chromium/dependencies, report the blocker precisely and do not claim the render passed.
+If Node/Chromium/dependencies/network access blocks validation, report the exact blocker and do not claim PASS.
 
 ## Output expectation
 
@@ -82,4 +108,4 @@ For each production change, report:
 - validation executed;
 - rendered output path when available;
 - unresolved missing assets/approvals;
-- whether any expensive generative step is still required.
+- expensive generative steps still required and their planned seconds.
