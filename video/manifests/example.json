@@ -1,0 +1,50 @@
+{
+  "id": "smoke-example-v1",
+  "width": 1080,
+  "height": 1920,
+  "fps": 30,
+  "background": "#101114",
+  "scenes": [
+    {
+      "id": "SH010",
+      "durationSec": 2.5,
+      "visual": {"kind": "color", "color": "#242735"},
+      "camera": "static",
+      "text": "REMOTION ASSEMBLY"
+    },
+    {
+      "id": "SH020",
+      "durationSec": 2.5,
+      "visual": {"kind": "color", "color": "#343042"},
+      "camera": "push-in",
+      "text": "manifest -> timeline"
+    },
+    {
+      "id": "SH030",
+      "durationSec": 2.5,
+      "visual": {"kind": "color", "color": "#20343A"},
+      "camera": "push-out",
+      "text": "approved assets -> render"
+    }
+  ],
+  "captions": [
+    {
+      "id": "CAP010",
+      "startSec": 0.2,
+      "endSec": 2.3,
+      "text": "Deterministic assembly layer"
+    },
+    {
+      "id": "CAP020",
+      "startSec": 2.7,
+      "endSec": 4.8,
+      "text": "Timing stays in data"
+    },
+    {
+      "id": "CAP030",
+      "startSec": 5.2,
+      "endSec": 7.3,
+      "text": "No expensive generation required"
+    }
+  ]
+}
